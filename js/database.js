@@ -73,6 +73,19 @@ export const db = {
         return await response.json();
     },
 
+    async register(companyName, cnpj, adminName, username, password) {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ companyName, cnpj, adminName, username, password })
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Falha ao registrar empresa.');
+        }
+        return await response.json();
+    },
+
     // --- CONFIGURAÇÃO ---
     async getConfig() {
         return await this.request('GET', '/api/config');

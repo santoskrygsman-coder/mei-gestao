@@ -690,5 +690,93 @@ module.exports = {
         }
         const res = await pool.query('DELETE FROM accounts WHERE id = $1 AND company_id = $2', [id, companyId]);
         return res.rowCount > 0;
+    },
+
+    async registerTenant(companyName, cnpj, adminName, username, password) {
+        const hashedPw = bcrypt.hashSync(password, 10);
+
+        if (useMock) {
+            if (mockDb.users.some(u => u.username === username.trim().toLowerCase())) {
+                throw new Error('Este login de usuário já está cadastrado.');
+            }
+
+            const newCompanyId = mockDb.companies.length ? Math.max(...mockDb.companies.map(c => c.id)) + 1 : 1;
+            const newCompany = {
+                id: newCompanyId,
+                name: companyName,
+                cnpj: cnpj || '',
+                phone: '',
+                address: '',
+                markup: 30.00,
+                wa_mode: 'link',
+                wa_endpoint: '',
+                wa_token: '',
+                logo_base64: '',
+                footer_message: 'Obrigado pela preferência!'
+            };
+            mockDb.companies.push(newCompany);
+
+            const newUserId = mockDb.users.length ? Math.max(...mockDb.users.map(u => u.id)) + 1 : 1;
+            const newUser = {
+                id: newUserId,
+                company_id: newCompanyId,
+                name: adminName,
+                username: username.trim().toLowerCase(),
+                password: hashedPw,
+                role: 'admin'
+            };
+            mockDb.users.push(newUser);
+
+            const newClient = {
+                id: 'c_' + Date.now(),
+                company_id: newCompanyId,
+                name: 'Consumidor Geral',
+                doc: '',
+                phone: '',
+                email: '',
+                balance: 0.00
+            };
+            mockDb.clients.push(newClient);
+
+            saveMock();
+            return { company: newCompany, user: newUser };
+        }
+
+        const checkUser = await pool.query('SELECT id FROM users WHERE username = $1', [username.trim().toLowerCase()]);
+        if (checkUser.rows.length > 0) {
+            throw new Error('Este login de usuário já está cadastrado.');
+        }
+
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const compRes = await client.query(`
+                INSERT INTO companies (name, cnpj, markup, wa_mode, footer_message)
+                VALUES ($1, $2, 30.00, 'link', 'Obrigado pela preferência!')
+                RETURNING id, name, cnpj
+            `, [companyName, cnpj || '']);
+            const company = compRes.rows[0];
+
+            const userRes = await client.query(`
+                INSERT INTO users (company_id, name, username, password, role)
+                VALUES ($1, $2, $3, $4, 'admin')
+                RETURNING id, company_id, name, username, role
+            `, [company.id, adminName, username.trim().toLowerCase(), hashedPw]);
+            const user = userRes.rows[0];
+
+            await client.query(`
+                INSERT INTO clients (id, company_id, name, balance)
+                VALUES ($1, $2, 'Consumidor Geral', 0.00)
+            `, ['c_' + Date.now(), company.id]);
+
+            await client.query('COMMIT');
+            return { company, user };
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
     }
 };

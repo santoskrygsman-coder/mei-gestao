@@ -104,6 +104,29 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+app.post('/api/auth/register', async (req, res) => {
+    const { companyName, cnpj, adminName, username, password } = req.body;
+
+    if (!companyName || !adminName || !username || !password) {
+        return res.status(400).json({ error: 'Campos obrigatórios ausentes.' });
+    }
+
+    try {
+        const result = await db.registerTenant(companyName, cnpj, adminName, username, password);
+        res.status(201).json({
+            message: 'Empresa e administrador registrados com sucesso!',
+            company: result.company,
+            user: {
+                name: result.user.name,
+                username: result.user.username,
+                role: result.user.role
+            }
+        });
+    } catch (e) {
+        res.status(400).json({ error: e.message || 'Erro ao registrar empresa.' });
+    }
+});
+
 // --- CONFIGURAÇÃO DA EMPRESA ---
 
 app.get('/api/config', authenticateToken, async (req, res) => {

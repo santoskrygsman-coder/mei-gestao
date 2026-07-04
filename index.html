@@ -1460,7 +1460,8 @@
         <div class="login-blob login-blob-2"></div>
 
         <div class="login-card-container">
-            <div class="login-glass-card">
+            <!-- 1. CARD DE LOGIN -->
+            <div class="login-glass-card" id="login-card">
                 <div style="text-align: center; margin-bottom: 2rem;">
                     <div class="login-emblem">M</div>
                     <h2 style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px;">
@@ -1496,6 +1497,77 @@
                     <button type="submit" class="btn-login-submit">
                         <i class="fa-solid fa-right-to-bracket"></i> Acessar Painel
                     </button>
+                </form>
+
+                <div style="text-align: center; margin-top: 1.75rem; font-size: 0.82rem;">
+                    <span class="text-muted">Não possui uma conta?</span>
+                    <a href="#" id="link-show-register" style="color: #38bdf8; font-weight: 600; text-decoration: none; margin-left: 0.25rem;">Cadastre seu MEI</a>
+                </div>
+            </div>
+
+            <!-- 2. CARD DE AUTO-CADASTRO (REGISTRO) -->
+            <div class="login-glass-card" id="register-card" style="display: none;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div class="login-emblem" style="background: linear-gradient(135deg, #a855f7, #38bdf8);">R</div>
+                    <h2 style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px;">
+                        Criar <span style="background: linear-gradient(90deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Conta MEI</span>
+                    </h2>
+                    <p class="text-muted" style="font-size: 0.82rem; margin-top: 0.35rem; font-weight: 500;">Registre sua empresa e comece a vender</p>
+                </div>
+                
+                <form id="form-register">
+                    <div class="form-group" style="margin-bottom: 0.95rem;">
+                        <label for="reg-company-name" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">Nome da Empresa / Fantasia</label>
+                        <div class="login-input-wrapper">
+                            <input type="text" class="form-control login-field" id="reg-company-name" placeholder="Mercadinho Exemplo" required>
+                            <i class="fa-solid fa-store login-input-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.95rem;">
+                        <label for="reg-cnpj" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">CNPJ (Opcional)</label>
+                        <div class="login-input-wrapper">
+                            <input type="text" class="form-control login-field" id="reg-cnpj" placeholder="00.000.000/0001-00">
+                            <i class="fa-solid fa-id-card login-input-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.95rem;">
+                        <label for="reg-admin-name" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">Nome do Proprietário</label>
+                        <div class="login-input-wrapper">
+                            <input type="text" class="form-control login-field" id="reg-admin-name" placeholder="Seu nome completo" required>
+                            <i class="fa-solid fa-address-card login-input-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.95rem;">
+                        <label for="reg-username" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">Usuário de Acesso</label>
+                        <div class="login-input-wrapper">
+                            <input type="text" class="form-control login-field" id="reg-username" placeholder="Seu login (ex: joao)" required autocapitalize="none" autocorrect="off">
+                            <i class="fa-solid fa-user login-input-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label for="reg-password" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">Senha de Acesso</label>
+                        <div class="login-input-wrapper">
+                            <input type="password" class="form-control login-field" id="reg-password" placeholder="Crie uma senha forte" required autocomplete="new-password" autocapitalize="none" autocorrect="off">
+                            <i class="fa-solid fa-lock login-input-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div id="register-error-msg" class="text-danger" style="display: none; font-size: 0.82rem; font-weight: 600; text-align: center; margin-bottom: 1.25rem; background: rgba(244, 63, 94, 0.08); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(244, 63, 94, 0.2);">
+                        <i class="fa-solid fa-circle-exclamation"></i> Falha ao registrar empresa.
+                    </div>
+                    
+                    <button type="submit" class="btn-login-submit" style="background: linear-gradient(135deg, #a855f7, #38bdf8);">
+                        <i class="fa-solid fa-user-plus"></i> Cadastrar e Começar
+                    </button>
+
+                    <div style="text-align: center; margin-top: 1.25rem; font-size: 0.82rem;">
+                        <span class="text-muted">Já tem uma conta?</span>
+                        <a href="#" id="link-show-login" style="color: #a855f7; font-weight: 600; text-decoration: none; margin-left: 0.25rem;">Voltar para o Login</a>
+                    </div>
                 </form>
             </div>
         </div>

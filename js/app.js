@@ -29,6 +29,30 @@ export const app = {
             formLogin.addEventListener('submit', (e) => this.handleLoginSubmit(e));
         }
 
+        // Alternância de Telas Login / Cadastro
+        const linkShowRegister = document.getElementById('link-show-register');
+        const linkShowLogin = document.getElementById('link-show-login');
+        const loginCard = document.getElementById('login-card');
+        const registerCard = document.getElementById('register-card');
+
+        if (linkShowRegister && linkShowLogin && loginCard && registerCard) {
+            linkShowRegister.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginCard.style.display = 'none';
+                registerCard.style.display = 'block';
+            });
+            linkShowLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                registerCard.style.display = 'none';
+                loginCard.style.display = 'block';
+            });
+        }
+
+        const formRegister = document.getElementById('form-register');
+        if (formRegister) {
+            formRegister.addEventListener('submit', (e) => this.handleRegisterSubmit(e));
+        }
+
         const btnTogglePassword = document.getElementById('btn-toggle-password');
         const loginPasswordInput = document.getElementById('login-password');
         const passwordToggleIcon = document.getElementById('password-toggle-icon');
@@ -495,6 +519,44 @@ export const app = {
         } catch (err) {
             console.error('Falha ao autenticar:', err);
             if (errorMsg) errorMsg.style.display = 'block';
+        }
+    },
+
+    async handleRegisterSubmit(e) {
+        e.preventDefault();
+        const companyName = document.getElementById('reg-company-name').value.trim();
+        const cnpj = document.getElementById('reg-cnpj').value.trim();
+        const adminName = document.getElementById('reg-admin-name').value.trim();
+        const username = document.getElementById('reg-username').value.trim().toLowerCase();
+        const password = document.getElementById('reg-password').value.trim();
+        const errorMsg = document.getElementById('register-error-msg');
+
+        try {
+            const regResult = await db.register(companyName, cnpj, adminName, username, password);
+            if (regResult) {
+                alert('Sua empresa foi cadastrada com sucesso! Inicializando painel de controle...');
+                const loginRes = await db.login(username, password);
+                if (loginRes && loginRes.token) {
+                    sessionStorage.setItem('token', loginRes.token);
+                    sessionStorage.setItem('loggedUser', JSON.stringify(loginRes.user));
+                    
+                    if (errorMsg) errorMsg.style.display = 'none';
+                    document.getElementById('form-register').reset();
+                    
+                    // Reseta telas e volta ao Login oculto
+                    document.getElementById('register-card').style.display = 'none';
+                    document.getElementById('login-card').style.display = 'block';
+                    
+                    this.checkLoginStatus();
+                    await this.switchView('dashboard');
+                }
+            }
+        } catch (err) {
+            console.error('Falha ao registrar inquilino:', err);
+            if (errorMsg) {
+                errorMsg.textContent = err.message || 'Falha ao registrar empresa.';
+                errorMsg.style.display = 'block';
+            }
         }
     },
 
