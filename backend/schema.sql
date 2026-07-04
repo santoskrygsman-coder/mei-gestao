@@ -30,7 +30,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS products (
     id VARCHAR(50) NOT NULL,
     company_id INTEGER REFERENCES companies(id) ON DELETE CASCADE,
+    barcode VARCHAR(50),
     name VARCHAR(255) NOT NULL,
+    category VARCHAR(100),
     cost NUMERIC(10,2) DEFAULT 0.00,
     price NUMERIC(10,2) DEFAULT 0.00,
     stock NUMERIC(10,2) DEFAULT 0.00,
