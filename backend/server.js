@@ -35,11 +35,35 @@ function authenticateToken(req, res, next) {
         return res.status(401).json({ error: 'Token de autenticação não fornecido.' });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, JWT_SECRET, async (err, user) => {
         if (err) {
             return res.status(403).json({ error: 'Token inválido ou expirado.' });
         }
         req.user = user;
+
+        // Verifica o status de assinatura da empresa (Tenant Billing Check)
+        try {
+            const company = await db.getCompany(user.company_id);
+            if (!company) {
+                return res.status(403).json({ error: 'Empresa não encontrada.', isExpired: true });
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const expiration = new Date(company.expiration_date);
+            
+            if (company.status === 'suspenso' || expiration < today) {
+                return res.status(403).json({ 
+                    error: 'Sua assinatura expirou ou está suspensa. Por favor, entre em contato para regularizar seu acesso.', 
+                    isExpired: true,
+                    expirationDate: company.expiration_date
+                });
+            }
+        } catch (e) {
+            console.error('Erro ao verificar assinatura da empresa:', e.message);
+        }
+
         next();
     });
 }

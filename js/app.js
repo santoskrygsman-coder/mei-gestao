@@ -53,6 +53,22 @@ export const app = {
             formRegister.addEventListener('submit', (e) => this.handleRegisterSubmit(e));
         }
 
+        // Evento de Assinatura Expirada (Exibe tela de bloqueio)
+        window.addEventListener('subscription-expired', (e) => {
+            const billingOverlay = document.getElementById('billing-overlay');
+            const loginOverlay = document.getElementById('login-overlay');
+            const appShell = document.getElementById('app-shell');
+            
+            if (billingOverlay) {
+                const dateVal = e.detail && e.detail.expirationDate;
+                const formattedDate = this.formatDate(dateVal);
+                document.getElementById('billing-expiry-date').textContent = formattedDate;
+                billingOverlay.style.display = 'flex';
+            }
+            if (loginOverlay) loginOverlay.style.display = 'none';
+            if (appShell) appShell.style.display = 'none';
+        });
+
         const btnTogglePassword = document.getElementById('btn-toggle-password');
         const loginPasswordInput = document.getElementById('login-password');
         const passwordToggleIcon = document.getElementById('password-toggle-icon');
@@ -469,10 +485,12 @@ export const app = {
         const loggedUser = JSON.parse(sessionStorage.getItem('loggedUser'));
         const loginOverlay = document.getElementById('login-overlay');
         const appShell = document.getElementById('app-shell');
+        const billingOverlay = document.getElementById('billing-overlay');
 
         if (!loggedUser) {
             if (loginOverlay) loginOverlay.style.display = 'flex';
             if (appShell) appShell.style.display = 'none';
+            if (billingOverlay) billingOverlay.style.display = 'none';
         } else {
             if (loginOverlay) loginOverlay.style.display = 'none';
             if (appShell) appShell.style.display = 'flex';
@@ -563,6 +581,8 @@ export const app = {
     handleLogout() {
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('loggedUser');
+        const billingOverlay = document.getElementById('billing-overlay');
+        if (billingOverlay) billingOverlay.style.display = 'none';
         this.checkLoginStatus();
     }
 };

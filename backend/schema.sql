@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS companies (
     wa_endpoint TEXT,
     wa_token TEXT,
     logo_base64 TEXT,
-    footer_message TEXT DEFAULT 'Obrigado pela preferência!'
+    footer_message TEXT DEFAULT 'Obrigado pela preferência!',
+    status VARCHAR(20) DEFAULT 'ativo',
+    expiration_date DATE DEFAULT (CURRENT_DATE + INTERVAL '15 days')
 );
 
 -- Tabela de Usuários

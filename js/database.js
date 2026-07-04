@@ -34,12 +34,19 @@ export const db = {
         try {
             const response = await fetch(`${API_URL}${path}`, options);
 
-            // Redireciona para login em caso de token expirado ou inválido
+            // Redireciona para login ou bloqueio em caso de token expirado ou licença vencida
             if (response.status === 401 || response.status === 403) {
+                const errData = await response.json().catch(() => ({}));
+                
+                if (response.status === 403 && errData.isExpired) {
+                    console.warn('⚠️ Assinatura suspensa ou expirada. Exibindo tela de bloqueio.');
+                    window.dispatchEvent(new CustomEvent('subscription-expired', { detail: errData }));
+                    throw new Error(errData.error || 'Sua assinatura expirou.');
+                }
+
                 console.warn('⚠️ Sessão expirada ou não autorizada. Redirecionando para login.');
                 sessionStorage.removeItem('token');
                 sessionStorage.removeItem('loggedUser');
-                // Força exibição do overlay de login
                 const loginOverlay = document.getElementById('login-overlay');
                 const appShell = document.getElementById('app-shell');
                 if (loginOverlay) loginOverlay.style.display = 'flex';
