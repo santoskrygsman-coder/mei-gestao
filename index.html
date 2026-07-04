@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEI Fácil Gestão - Controle de Vendas, Estoque e PDV</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="scanner-flash" class="scanner-flash"></div>
+
+    <div id="app-shell">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="brand">
+                <div class="brand-logo">M</div>
+                <div class="brand-name">MEI Fácil</div>
+            </div>
+            <nav>
+                <a class="nav-item active" data-view="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Painel</span>
+                </a>
+                <a class="nav-item" data-view="pdv">
+                    <i class="fa-solid fa-cash-register"></i>
+                    <span>Frente de Caixa (PDV)</span>
+                </a>
+                <a class="nav-item" data-view="estoque">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Estoque & Compras</span>
+                </a>
+                <a class="nav-item" data-view="clientes">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                <a class="nav-item" data-view="documentos">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <span>Orçamentos & Condicional</span>
+                </a>
+                <a class="nav-item" data-view="financeiro">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <span>Financeiro</span>
+                </a>
+                <a class="nav-item" data-view="relatorios">
+                    <i class="fa-solid fa-chart-column"></i>
+                    <span>Relatórios</span>
+                </a>
+                <a class="nav-item" data-view="configuracoes">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Configurações</span>
+                </a>
+            </nav>
+            <div class="user-info">
+                <span class="company-name" id="sidebar-user-name">Carregando...</span>
+                <span class="user-role" id="sidebar-user-role">Perfil: ---</span>
+                <div style="display: flex; gap: 0.45rem; margin-top: 0.5rem; width: 100%;">
+                    <button class="btn btn-secondary btn-sm" id="btn-backup-modal" style="font-size: 0.72rem; padding: 0.35rem 0.45rem; flex-grow: 1;" title="Exportar/Importar Backup">
+                        <i class="fa-solid fa-database"></i> Backup
+                    </button>
+                    <button class="btn btn-danger btn-sm" id="btn-logout" style="font-size: 0.72rem; padding: 0.35rem 0.55rem;" title="Sair da Conta">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sair
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main>
+            <!-- Backdrop do Menu Lateral no Mobile -->
+            <div id="sidebar-backdrop" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: 99; backdrop-filter: blur(4px);"></div>
+
+            <header>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button id="btn-menu-toggle" class="btn btn-icon" style="display: none; padding: 0.4rem 0.5rem; border-radius: 8px;" title="Abrir Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h1 id="view-title">Painel de Controle</h1>
+                </div>
+                <div class="header-actions">
+                    <div id="header-clock" class="text-muted" style="font-size: 0.9rem; font-weight: 500;">02/07/2026 09:16</div>
+                </div>
+            </header>
+
+            <!-- Telas (Views) -->
+
+            <!-- 1. DASHBOARD VIEW -->
+            <div id="dashboard-view" class="view-content active">
+                <!-- Termômetro de Limite MEI -->
+                <div class="glass-card" style="margin-bottom: 1.5rem;">
+                    <div class="flex-between">
+                        <h3 style="font-size: 1rem;"><i class="fa-solid fa-gauge-high"></i> Termômetro Limite MEI (Faturamento do Ano)</h3>
+                        <span id="mei-termometro-percent" style="font-weight: 700; color: var(--primary);">0%</span>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.5); height: 14px; border-radius: 9999px; overflow: hidden; margin: 0.75rem 0; border: 1px solid var(--panel-border);">
+                        <div id="mei-termometro-bar" style="background: linear-gradient(90deg, var(--primary), var(--success)); height: 100%; width: 0%; transition: width 0.5s ease-out;"></div>
+                    </div>
+                    <div class="flex-between" style="font-size: 0.8rem; color: var(--text-muted);">
+                        <span id="mei-termometro-sales">Acumulado: R$ 0,00</span>
+                        <span>Limite Anual: R$ 81.000,00</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h4>Faturamento (Mês)</h4>
+                            <div class="value" id="dash-faturamento">R$ 0,00</div>
+                        </div>
+                        <div class="metric-icon green">
+                            <i class="fa-solid fa-money-bill-trend-up"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h4>Itens no Estoque</h4>
+                            <div class="value" id="dash-estoque-total">0</div>
+                        </div>
+                        <div class="metric-icon blue">
+                            <i class="fa-solid fa-box"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h4>Estoque Crítico</h4>
+                            <div class="value text-danger" id="dash-estoque-critico">0</div>
+                        </div>
+                        <div class="metric-icon red">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h4>Contas a Receber (Vencidas)</h4>
+                            <div class="value text-warning" id="dash-receber-vencido">R$ 0,00</div>
+                        </div>
+                        <div class="metric-icon orange">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerta de Estoque Crítico (Oculto por padrão, visível se houver itens baixos) -->
+                <div class="glass-card" id="dash-alert-stock-card" style="display: none; border-color: rgba(244, 63, 94, 0.4); background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(13, 20, 37, 0.55) 100%); margin-bottom: 1.5rem;">
+                    <div class="flex-between mb-2">
+                        <h3 class="text-danger" style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-triangle-exclamation"></i> Atenção: Itens em Estoque Crítico</h3>
+                        <span class="badge badge-danger" id="dash-alert-stock-count">0 produtos</span>
+                    </div>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Os seguintes produtos atingiram ou estão abaixo da quantidade de estoque mínimo configurado. Recomendamos a reposição rápida.</p>
+                    <div class="table-responsive">
+                        <table class="custom-table" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Estoque Atual</th>
+                                    <th>Mínimo Requerido</th>
+                                    <th>Status</th>
+                                    <th style="width: 110px; text-align: center;">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-alert-stock-body">
+                                <!-- Injetado via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <!-- Fluxo de Caixa Recente -->
+                    <div class="glass-card">
+                        <div class="flex-between mb-2" style="align-items: center;">
+                            <h3 id="dash-chart-title" style="margin-bottom: 0; font-size: 1.15rem;">Fluxo de Caixa (Últimos 7 dias)</h3>
+                            <div class="flex-gap">
+                                <button class="btn btn-secondary btn-sm" id="btn-chart-cashflow" style="font-size: 0.72rem; padding: 0.3rem 0.6rem; border-color: var(--primary);" title="Fluxo de Caixa (Entradas e Saídas)">Fluxo</button>
+                                <button class="btn btn-secondary btn-sm" id="btn-chart-sales" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;" title="Comparativo de Vendas Diárias">Vendas</button>
+                            </div>
+                        </div>
+                        <div class="bar-chart-container" id="cashflow-chart">
+                            <!-- Injetado dinamicamente via JS -->
+                        </div>
+                        <div class="table-responsive mt-2">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-recent-transactions">
+                                    <!-- Injetado dinamicamente via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Lembretes / Alertas -->
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.05rem;"><i class="fa-solid fa-bolt text-warning"></i> Ações Rápidas</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                            <button class="btn btn-primary" onclick="app.switchView('pdv')" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);">
+                                <i class="fa-solid fa-cart-plus"></i> Abrir PDV
+                            </button>
+                            <button class="btn btn-success" id="btn-compra-rapida" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+                                <i class="fa-solid fa-truck-ramp-box"></i> Entrada de Compra
+                            </button>
+                            <button class="btn" id="btn-condicional-rapido" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);">
+                                <i class="fa-solid fa-hand-holding-hand"></i> Novo Condicional
+                            </button>
+                        </div>
+                        
+                        <h3 class="mt-2" style="font-size: 1.05rem; border-top: 1px solid var(--panel-border); padding-top: 1.25rem;"><i class="fa-solid fa-triangle-exclamation text-danger"></i> Alerta de Reposição</h3>
+                        <p class="text-muted" style="font-size: 0.75rem; margin-top: 0.25rem;">Clique no item para repor rapidamente:</p>
+                        <div style="max-height: 180px; overflow-y: auto; margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.5rem;" id="dash-low-stock-list">
+                            <!-- Injetado via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. PDV VIEW -->
+            <div id="pdv-view" class="view-content">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                    <button class="btn btn-secondary" onclick="app.pdv.openSalesHistory()" style="padding: 0.55rem 1rem;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Histórico de Vendas
+                    </button>
+                </div>
+                <div class="pdv-layout">
+                    <div class="pdv-main">
+                        <!-- Simulated Barcode Scanner widget -->
+                        <div class="simulator-widget">
+                            <h5><i class="fa-solid fa-laptop-code"></i> Simulador de Leitor de Código de Barras</h5>
+                            <p class="text-muted mb-1" style="font-size: 0.75rem;">Clique em um produto abaixo para simular o bipe do leitor físico.</p>
+                            <div class="simulator-buttons" id="pdv-simulator-products">
+                                <!-- Injetado via JS -->
+                            </div>
+                        </div>
+
+                        <div class="pdv-barcode-scanner">
+                            <div class="pdv-barcode-input-container">
+                                <i class="fa-solid fa-barcode"></i>
+                                <input type="text" class="form-control" id="pdv-barcode-input" placeholder="Bipe o código de barras ou digite e aperte Enter..." autocomplete="off">
+                            </div>
+                            <button class="btn btn-secondary" id="btn-pdv-search-product" title="Buscar produto pelo nome (F4)">
+                                <i class="fa-solid fa-search"></i>
+                            </button>
+                            <button class="btn btn-secondary" id="btn-pdv-pause-sale" title="Pausar venda atual (F7)">
+                                <i class="fa-solid fa-pause"></i> Pausar
+                            </button>
+                            <div id="pdv-suspended-sales-container" style="display: none; align-items: center; gap: 0.5rem;">
+                                <span class="badge badge-warning" id="pdv-suspended-sales-count">1 Pausada</span>
+                                <button class="btn btn-primary" id="btn-pdv-resume-sale" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; height: 35px;">
+                                    <i class="fa-solid fa-play"></i> Recuperar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="pdv-cart">
+                            <div class="pdv-cart-header">
+                                <div>Produto</div>
+                                <div>Qtd</div>
+                                <div>Unitário</div>
+                                <div>Total</div>
+                                <div>Ação</div>
+                            </div>
+                            <div class="pdv-cart-items" id="pdv-cart-items">
+                                <!-- Itens adicionados pelo JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pdv-sidebar">
+                        <div class="pdv-summary-section">
+                            <div class="form-group">
+                                <label for="pdv-client-select">Cliente</label>
+                                <select class="form-control" id="pdv-client-select">
+                                    <!-- Carregado via JS -->
+                                </select>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="pdv-discount">Desconto (R$)</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" id="pdv-discount" value="0.00">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pdv-addition">Acréscimo (R$)</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" id="pdv-addition" value="0.00">
+                                </div>
+                            </div>
+
+                            <div class="pdv-total-box">
+                                <label>Total da Venda</label>
+                                <div class="total-value" id="pdv-total-display">R$ 0,00</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <button class="btn btn-secondary" id="btn-pdv-save-orcamento">
+                                <i class="fa-solid fa-file-invoice"></i> Salvar como Orçamento
+                            </button>
+                            <button class="btn btn-secondary" id="btn-pdv-save-condicional">
+                                <i class="fa-solid fa-hand-holding-hand"></i> Enviar como Condicional
+                            </button>
+                            <button class="btn btn-success btn-lg" id="btn-pdv-finish" style="padding: 1rem;">
+                                <i class="fa-solid fa-check-double"></i> PAGAR / FINALIZAR
+                            </button>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.75rem; display: flex; justify-content: center; gap: 0.65rem;">
+                            <span><strong>F2:</strong> Pagar</span>
+                            <span><strong>F4:</strong> Buscar</span>
+                            <span><strong>F7:</strong> Pausar/Ver</span>
+                            <span><strong>ESC:</strong> Limpar</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ESTOQUE VIEW -->
+            <div id="estoque-view" class="view-content">
+                <div class="glass-card">
+                    <div class="flex-between mb-3">
+                        <h2>Lista de Produtos</h2>
+                        <div class="flex-gap">
+                            <button class="btn btn-secondary" id="btn-import-xml">
+                                <i class="fa-solid fa-file-code"></i> Importar XML (NF-e)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-purchase-entry">
+                                <i class="fa-solid fa-truck-moving"></i> Entrada (Compras)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-stock-adjust">
+                                <i class="fa-solid fa-sliders"></i> Ajuste Manual
+                            </button>
+                            <button class="btn btn-primary" id="btn-new-product">
+                                <i class="fa-solid fa-plus"></i> Novo Produto
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="custom-table" id="table-products">
+                            <thead>
+                                <tr>
+                                    <th>Cód. Barras</th>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Custo Médio</th>
+                                    <th>Preço Venda</th>
+                                    <th>Estoque</th>
+                                    <th>Mínimo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-products-body">
+                                <!-- Preenchido por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. CLIENTES VIEW -->
+            <div id="clientes-view" class="view-content">
+                <div class="glass-card">
+                    <div class="flex-between mb-3">
+                        <h2>Lista de Clientes</h2>
+                        <button class="btn btn-primary" id="btn-new-client">
+                            <i class="fa-solid fa-plus"></i> Novo Cliente
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="custom-table" id="table-clients">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CPF/CNPJ</th>
+                                    <th>Telefone</th>
+                                    <th>E-mail</th>
+                                    <th>Saldo devedor (Crediário)</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-clients-body">
+                                <!-- Preenchido por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. DOCUMENTOS VIEW (ORÇAMENTOS & CONDICIONAIS) -->
+            <div id="documentos-view" class="view-content">
+                <div class="glass-card">
+                    <h2>Gerenciamento de Documentos</h2>
+                    <p class="text-muted mb-2">Orçamentos salvos, Pedidos e saídas de mercadorias no formato Condicional.</p>
+                    
+                    <div class="table-responsive mt-3">
+                        <table class="custom-table" id="table-documents">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Tipo</th>
+                                    <th>Cliente</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-documents-body">
+                                <!-- Preenchido por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. FINANCEIRO VIEW -->
+            <div id="financeiro-view" class="view-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <!-- Contas a Pagar -->
+                    <div class="glass-card">
+                        <div class="flex-between mb-2">
+                            <h3>Contas a Pagar</h3>
+                            <button class="btn btn-secondary btn-sm" id="btn-new-payable">
+                                <i class="fa-solid fa-plus"></i> Adicionar Conta
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="custom-table" id="table-payable">
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Vencimento</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="list-payable-body">
+                                    <!-- Injetado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Contas a Receber -->
+                    <div class="glass-card">
+                        <div class="flex-between mb-2">
+                            <h3>Contas a Receber (Crediário)</h3>
+                            <button class="btn btn-secondary btn-sm" id="btn-new-receivable">
+                                <i class="fa-solid fa-plus"></i> Adicionar Conta
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="custom-table" id="table-receivable">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente / Descrição</th>
+                                        <th>Vencimento</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="list-receivable-body">
+                                    <!-- Injetado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extrato de Fluxo de Caixa -->
+                <div class="glass-card">
+                    <div class="flex-between mb-2">
+                        <h3>Lançamentos do Livro Caixa</h3>
+                        <button class="btn btn-primary btn-sm" id="btn-new-transaction">
+                            <i class="fa-solid fa-plus"></i> Novo Lançamento Manual
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="custom-table" id="table-transactions">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Tipo</th>
+                                    <th>Categoria</th>
+                                    <th>Valor</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-transactions-body">
+                                <!-- Injetado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. RELATÓRIOS VIEW -->
+            <div id="relatorios-view" class="view-content">
+                <!-- Filtro de Período -->
+                <div class="glass-card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-calendar-days"></i> Filtrar Relatórios por Período</h3>
+                        <div class="flex-gap" style="align-items: center; flex-wrap: wrap;">
+                            <div class="flex-gap" style="align-items: center;">
+                                <label for="report-filter-start" style="font-size: 0.85rem; margin-bottom: 0; color: var(--text-muted);">De:</label>
+                                <input type="date" class="form-control" id="report-filter-start" style="width: 140px; padding: 0.35rem; font-size: 0.85rem;">
+                            </div>
+                            <div class="flex-gap" style="align-items: center;">
+                                <label for="report-filter-end" style="font-size: 0.85rem; margin-bottom: 0; color: var(--text-muted);">Até:</label>
+                                <input type="date" class="form-control" id="report-filter-end" style="width: 140px; padding: 0.35rem; font-size: 0.85rem;">
+                            </div>
+                            <button class="btn btn-primary" id="btn-report-filter" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                                <i class="fa-solid fa-filter"></i> Filtrar
+                            </button>
+                            <button class="btn btn-secondary" id="btn-report-filter-clear" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                                Limpar
+                            </button>
+                            <button class="btn btn-secondary" onclick="window.print()" style="padding: 0.45rem 1rem; font-size: 0.85rem;" title="Salvar Relatório em PDF ou Imprimir">
+                                <i class="fa-solid fa-file-pdf"></i> PDF / Imprimir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DRE Simplificado -->
+                <div class="glass-card" style="margin-bottom: 1.5rem;">
+                    <div class="flex-between mb-2">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-calculator"></i> DRE Simplificado - Demonstrativo do Resultado</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportDreToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar DRE para Excel">
+                            <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                        </button>
+                    </div>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Calculado dinamicamente com base nas vendas faturadas e no Preço Médio de Custo (CMV).</p>
+                    <div class="table-responsive">
+                        <table class="custom-table" style="font-size: 0.95rem;">
+                            <thead>
+                                <tr>
+                                    <th>Indicador Financeiro</th>
+                                    <th style="text-align: right; width: 200px;">Valor</th>
+                                    <th>Descrição / Análise</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dre-body">
+                                <!-- Injetado via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem;">
+                    <!-- Curva ABC de Vendas -->
+                    <div class="glass-card">
+                        <div class="flex-between mb-2">
+                            <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-ranking-star"></i> Ranking / Curva ABC de Vendas (Giro de Produtos)</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportAbcToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar Ranking para Excel">
+                                <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                            </button>
+                        </div>
+                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Produtos ordenados pela receita gerada. Mostra a margem e lucro bruto real por item.</p>
+                        <div class="table-responsive">
+                            <table class="custom-table" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th style="width: 80px;">Qtd. Vendida</th>
+                                        <th style="text-align: right; width: 120px;">Receita Total</th>
+                                        <th style="text-align: right; width: 110px;">Custo (CMV)</th>
+                                        <th style="text-align: right; width: 110px;">Lucro Bruto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-abc-body">
+                                    <!-- Injetado via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Crediário Ativo / Devedores -->
+                    <div class="glass-card">
+                        <div class="flex-between mb-2">
+                            <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-comments-dollar"></i> Cobrança / Crediário Ativo</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportDevedoresToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar Devedores para Excel">
+                                <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                            </button>
+                        </div>
+                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Clientes com contas em aberto (débito pendente). Gere links de cobrança direta.</p>
+                        <div class="table-responsive">
+                            <table class="custom-table" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th style="text-align: right; width: 120px;">Saldo Devedor</th>
+                                        <th style="width: 90px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-devedores-body">
+                                    <!-- Injetado via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. CONFIGURAÇÕES VIEW -->
+            <div id="configuracoes-view" class="view-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <!-- Dados da Empresa -->
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-building-user"></i> Cadastro da Empresa Licenciada</h3>
+                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1.25rem;">Essas informações serão exibidas nos comprovantes térmicos e relatórios.</p>
+                        <form id="form-config-company">
+                            <div class="form-group">
+                                <label for="cfg-name">Razão Social / Nome Fantasia</label>
+                                <input type="text" class="form-control" id="cfg-name" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cfg-cnpj">CNPJ</label>
+                                    <input type="text" class="form-control" id="cfg-cnpj" placeholder="00.000.000/0001-00">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cfg-markup">Margem de Lucro Padrão (%)</label>
+                                    <input type="number" class="form-control" id="cfg-markup" min="0" placeholder="50">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cfg-phone">Telefone / WhatsApp</label>
+                                    <input type="text" class="form-control" id="cfg-phone" placeholder="(99) 99999-9999">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cfg-footer">Mensagem de Rodapé do Cupom</label>
+                                    <input type="text" class="form-control" id="cfg-footer" placeholder="Obrigado pela preferência!">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-address">Endereço Comercial</label>
+                                <input type="text" class="form-control" id="cfg-address" placeholder="Rua, Número, Bairro, Cidade - UF">
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-logo">Logotipo da Empresa (Imagem)</label>
+                                <input type="file" class="form-control" id="cfg-logo" accept="image/*" style="padding: 0.25rem;">
+                                <span class="text-muted" style="font-size: 0.7rem; display: block; margin-top: 0.15rem;">Escolha uma imagem quadrada ou horizontal pequena.</span>
+                                <div id="cfg-logo-preview-container" style="display: none; margin-top: 0.5rem; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.03); padding: 0.5rem; border-radius: 6px;">
+                                    <img id="cfg-logo-preview" src="" style="max-height: 45px; border-radius: 4px; filter: grayscale(100%);">
+                                    <button type="button" class="btn btn-danger btn-sm" id="btn-remove-logo" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"><i class="fa-solid fa-trash"></i> Remover</button>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Salvar Dados da Empresa
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Configurações de Integração WhatsApp -->
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-envelope-open-text"></i> Integração de Envio (WhatsApp)</h3>
+                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1.25rem;">Escolha como o sistema deve enviar as mensagens e comprovantes aos clientes.</p>
+                        <form id="form-config-whatsapp">
+                            <div class="form-group">
+                                <label for="cfg-wa-mode">Método de Envio</label>
+                                <select class="form-control" id="cfg-wa-mode" required>
+                                    <option value="link">Link Direto / Navegador (Gratuito)</option>
+                                    <option value="api">API Dedicada (Z-API, Evolution, etc.)</option>
+                                </select>
+                            </div>
+
+                            <div id="cfg-wa-api-fields" style="display: none; background: rgba(15, 23, 42, 0.4); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--panel-border); margin-bottom: 1rem;">
+                                <h4 style="font-size: 0.9rem; color: var(--warning); margin-bottom: 0.75rem;"><i class="fa-solid fa-key"></i> Credenciais da API</h4>
+                                <div class="form-group">
+                                    <label for="cfg-wa-endpoint">Endpoint Completo de Envio (POST URL)</label>
+                                    <input type="url" class="form-control" id="cfg-wa-endpoint" placeholder="https://api.z-api.io/instances/SUA_INSTANCIA/token/SEU_TOKEN/send-text">
+                                    <span class="text-muted" style="font-size: 0.7rem; margin-top: 0.25rem; display: block;">Insira a URL completa fornecida pelo gateway de envio.</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cfg-wa-token">Token de Segurança / API Key (Opcional)</label>
+                                    <input type="text" class="form-control" id="cfg-wa-token" placeholder="Client-Token ou Token de Autorização">
+                                    <span class="text-muted" style="font-size: 0.7rem; margin-top: 0.25rem; display: block;">Se o seu gateway exigir cabeçalhos de autenticação específicos.</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success mt-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Salvar Integração WhatsApp
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Gerenciar Usuários (Apenas Administradores) -->
+                <div class="glass-card mt-3" id="cfg-users-section">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-users-gear"></i> Controle de Usuários e Permissões</h3>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1.25rem;">Cadastre e gerencie as contas de acesso dos seus operadores e vendedores.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+                        <!-- Formulário de Usuário -->
+                        <form id="form-config-user" style="border-right: 1px solid var(--panel-border); padding-right: 1.5rem;">
+                            <input type="hidden" id="cfg-user-id">
+                            <div class="form-group">
+                                <label for="cfg-user-name">Nome Completo</label>
+                                <input type="text" class="form-control" id="cfg-user-name" placeholder="Ex: João da Silva" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-user-username">Usuário (Login)</label>
+                                <input type="text" class="form-control" id="cfg-user-username" placeholder="Ex: joao.caixa" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-user-password">Senha de Acesso</label>
+                                <input type="password" class="form-control" id="cfg-user-password" placeholder="Digite uma senha" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-user-role">Nível de Permissão</label>
+                                <select class="form-control" id="cfg-user-role" required>
+                                    <option value="vendedor">Vendedor / Operador (Acesso Restrito)</option>
+                                    <option value="admin">Administrador (Acesso Total)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2" style="width: 100%;">
+                                <i class="fa-solid fa-user-plus"></i> Salvar Usuário
+                            </button>
+                        </form>
+                        
+                        <!-- Tabela de Usuários cadastrados -->
+                        <div>
+                            <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-list"></i> Contas Ativas</h4>
+                            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                                <table class="custom-table" style="font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Usuário</th>
+                                            <th>Perfil</th>
+                                            <th style="width: 80px; text-align: center;">Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cfg-users-table-body">
+                                        <!-- Injetado via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAIS DO SISTEMA -->
+
+    <!-- Modal: Cadastro / Edição de Produto -->
+    <div id="modal-product" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-product-title">Cadastrar Produto</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-product')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-product">
+                    <input type="hidden" id="prod-id">
+                    <div class="form-group">
+                        <label for="prod-barcode">Código de Barras</label>
+                        <div class="flex-gap" style="align-items: center;">
+                            <input type="text" class="form-control" id="prod-barcode" required>
+                            <button type="button" class="btn btn-secondary" style="white-space: nowrap; height: 100%; display: inline-flex; align-items: center;" onclick="document.getElementById('prod-barcode').value = '789' + Math.floor(Math.random() * 10000000000)">Gerar EAN</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="prod-name">Nome do Produto</label>
+                        <input type="text" class="form-control" id="prod-name" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="prod-category">Categoria</label>
+                            <input type="text" class="form-control" id="prod-category" placeholder="Ex: Vestuário">
+                        </div>
+                        <div class="form-group">
+                            <label for="prod-min-stock">Estoque Mínimo</label>
+                            <input type="number" class="form-control" id="prod-min-stock" value="2" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-row" id="product-prices-row">
+                        <div class="form-group">
+                            <label for="prod-cost">Preço de Custo</label>
+                            <input type="number" step="0.01" class="form-control" id="prod-cost" value="0.00" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="prod-price">Preço de Venda</label>
+                            <input type="number" step="0.01" class="form-control" id="prod-price" value="0.00" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="prod-stock">Estoque Atual</label>
+                            <input type="number" class="form-control" id="prod-stock" value="0" required min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-product')">Cancelar</button>
+                <button type="submit" form="form-product" class="btn btn-primary">Salvar Produto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Entrada de Compras / Recálculo de Preço Médio -->
+    <div id="modal-purchase" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Registrar Entrada de Compra (Preço Médio)</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-purchase')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-purchase">
+                    <div class="form-group">
+                        <label for="pur-product-select">Selecionar Produto</label>
+                        <select class="form-control" id="pur-product-select" required>
+                            <!-- Injetado via JS -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Estoque Atual</label>
+                            <input type="text" class="form-control" id="pur-current-stock" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Custo Médio Atual</label>
+                            <input type="text" class="form-control" id="pur-current-cost" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pur-qty">Quantidade Comprada</label>
+                            <input type="number" class="form-control" id="pur-qty" min="1" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pur-cost">Novo Custo Unitário (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="pur-cost" required min="0">
+                        </div>
+                    </div>
+
+                    <!-- Caixa de Simulação de Novo Preço Médio -->
+                    <div class="glass-card mt-2" style="background: rgba(15, 23, 42, 0.4); border-color: var(--primary);">
+                        <h4 style="color: var(--primary); font-size: 0.9rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-calculator"></i> Simulação de Impacto</h4>
+                        <div class="form-row" style="font-size: 0.85rem;">
+                            <div>Novo Estoque Total: <strong id="pur-sim-stock" class="text-success">0</strong></div>
+                            <div>Novo Custo Médio: <strong id="pur-sim-cost" class="text-warning">R$ 0,00</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="pur-update-price-check">
+                            <label for="pur-update-price-check" style="margin-bottom: 0; cursor: pointer;">Deseja atualizar o preço de venda deste produto?</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="pur-new-price-group" style="display: none;">
+                        <label for="pur-new-price">Novo Preço de Venda (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="pur-new-price">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-purchase')">Cancelar</button>
+                <button type="submit" form="form-purchase" class="btn btn-success">Confirmar Entrada</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Importação de XML (NF-e) -->
+    <div id="modal-xml-import" class="modal-overlay">
+        <div class="modal-container" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>Importação de XML de Compra (NF-e)</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-xml-import')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Dropzone -->
+                <div id="xml-drop-zone" style="border: 2px dashed var(--primary); padding: 2rem; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 1.5rem; background: rgba(59, 130, 246, 0.05); transition: background var(--transition-fast);">
+                    <i class="fa-solid fa-file-arrow-up" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem; display: block;"></i>
+                    <span>Arraste o arquivo XML da NF-e aqui ou <strong>clique para selecionar</strong></span>
+                    <input type="file" id="input-xml-file" accept=".xml" style="display: none;">
+                </div>
+                
+                <!-- Detalhes da NF-e -->
+                <div id="xml-invoice-details" style="display: none; background: rgba(15, 23, 42, 0.4); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--panel-border);">
+                    <div class="form-row" style="font-size: 0.85rem;">
+                        <div>Chave: <strong id="xml-info-chave">...</strong></div>
+                        <div>Emitente: <strong id="xml-info-emit">...</strong></div>
+                        <div>Emissão: <strong id="xml-info-date">...</strong></div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Conciliação -->
+                <div id="xml-conciliation-section" style="display: none;">
+                    <h4 style="font-size: 1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-code-compare"></i> Conciliação de Itens</h4>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.75rem;">Associe os produtos do fornecedor a itens do seu estoque ou cadastre-os como novos.</p>
+                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                        <table class="custom-table" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th>Item na Nota</th>
+                                    <th style="width: 70px;">Qtd</th>
+                                    <th style="width: 100px;">Custo Unit.</th>
+                                    <th>Vincular ao Produto do Estoque</th>
+                                </tr>
+                            </thead>
+                            <tbody id="xml-items-body">
+                                <!-- Injetado dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="xml-import-footer" style="display: none;">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-xml-import')">Cancelar</button>
+                <button class="btn btn-success" id="btn-confirm-xml-import">Confirmar Importação</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cadastro / Edição de Cliente -->
+    <div id="modal-client" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-client-title">Cadastrar Cliente</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-client')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-client">
+                    <input type="hidden" id="cli-id">
+                    <div class="form-group">
+                        <label for="cli-name">Nome Completo</label>
+                        <input type="text" class="form-control" id="cli-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cli-doc">CPF ou CNPJ</label>
+                        <input type="text" class="form-control" id="cli-doc">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cli-phone">Telefone / WhatsApp</label>
+                            <input type="text" class="form-control" id="cli-phone" placeholder="(99) 99999-9999">
+                        </div>
+                        <div class="form-group">
+                            <label for="cli-email">E-mail</label>
+                            <input type="email" class="form-control" id="cli-email">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-client')">Cancelar</button>
+                <button type="submit" form="form-client" class="btn btn-primary">Salvar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Checkout do PDV & Forma de Pagamento -->
+    <div id="modal-checkout" class="modal-overlay">
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>Finalizar Venda</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-checkout')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">TOTAL A PAGAR</span>
+                    <h2 style="font-size: 2.5rem; color: var(--success); font-weight: 800;" id="checkout-total-display">R$ 0,00</h2>
+                </div>
+
+                <!-- Painel de Uso de Crédito -->
+                <div id="checkout-credit-box" style="display: none; background: rgba(14, 165, 233, 0.05); border: 1px dashed var(--primary); padding: 1rem; border-radius: 8px; margin-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600;"><i class="fa-solid fa-gift"></i> Crédito do Cliente Disponível</span>
+                        <strong id="checkout-credit-available" class="text-success" style="font-size: 0.95rem;">R$ 0,00</strong>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="checkout-use-credit-check" style="cursor: pointer;">
+                        <label for="checkout-use-credit-check" style="margin-bottom: 0; cursor: pointer; font-size: 0.82rem;">Abater <strong id="checkout-credit-value-to-use">R$ 0,00</strong> desta venda</label>
+                    </div>
+                </div>
+
+                <!-- Saldo Restante após Abatimento -->
+                <div id="checkout-remaining-row" style="display: none; text-align: center; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.02); padding: 0.4rem; border-radius: 6px;">
+                    <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">SALDO RESTANTE A RECEBER: </span>
+                    <strong id="checkout-remaining-display" style="color: var(--warning); font-size: 1.2rem; font-weight: 800; margin-left: 0.25rem;">R$ 0,00</strong>
+                </div>
+                <div class="form-group">
+                    <label for="checkout-payment-method">Forma de Pagamento</label>
+                    <select class="form-control" id="checkout-payment-method" required>
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">PIX</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Crediário">Crediário (A Prazo / Fiado)</option>
+                    </select>
+                </div>
+                
+                <div id="checkout-cash-received-group">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="checkout-cash-received">Valor Recebido (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="checkout-cash-received" value="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Troco</label>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning); padding: 0.5rem 0;" id="checkout-change-display">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="checkout-due-date-group" style="display: none;">
+                    <div class="form-group">
+                        <label for="checkout-due-date">Data de Vencimento do Crediário</label>
+                        <input type="date" class="form-control" id="checkout-due-date">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-checkout')">Voltar</button>
+                <button class="btn btn-success" id="btn-confirm-checkout">Confirmar Recebimento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cupom de Venda / Impressão de Comprovante (80mm) -->
+    <div id="modal-receipt" class="modal-overlay">
+        <div class="modal-container" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3>Comprovante de Venda</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-receipt')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1rem; background: #e2e8f0;">
+                <div id="receipt-container">
+                    <!-- Injetado dinamicamente no formato Courier pelo JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-receipt')">Fechar</button>
+                <button class="btn btn-success" id="btn-receipt-whatsapp">
+                    <i class="fa-brands fa-whatsapp"></i> Enviar WhatsApp
+                </button>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="fa-solid fa-print"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Retorno ou Finalização de Condicional -->
+    <div id="modal-condicional" class="modal-overlay">
+        <div class="modal-container" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Retorno / Fechamento de Condicional</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-condicional')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">Marque a quantidade devolvida de cada produto pelo cliente. O restante será cobrado.</p>
+                <div style="font-weight: 600; margin-bottom: 1rem;" id="cond-client-info">Cliente: Carlos Eduardo Silva</div>
+                
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Qtd Retirada</th>
+                                <th>Qtd Devolvida</th>
+                                <th>Faturado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cond-items-body">
+                            <!-- Injetado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="glass-card mt-2">
+                    <div class="flex-between">
+                        <div>Total a Faturar:</div>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--success);" id="cond-faturar-total">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-condicional')">Voltar</button>
+                <button class="btn btn-primary" id="btn-cond-confirm">Confirmar Fechamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Lançamento Financeiro Manual -->
+    <div id="modal-financeiro" class="modal-overlay">
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 id="modal-financeiro-title">Novo Lançamento</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-financeiro')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-financeiro">
+                    <input type="hidden" id="fin-id">
+                    <input type="hidden" id="fin-type-context"> <!-- 'trans' ou 'account' -->
+                    <div class="form-group">
+                        <label for="fin-type">Tipo de Lançamento</label>
+                        <select class="form-control" id="fin-type">
+                            <option value="receita">Receita (Entrada)</option>
+                            <option value="despesa">Despesa (Saída)</option>
+                            <option value="pagar">Conta a Pagar (Despesa Futura)</option>
+                            <option value="receber">Conta a Receber (Receita Futura)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fin-desc">Descrição / Fornecedor</label>
+                        <input type="text" class="form-control" id="fin-desc" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fin-amount">Valor (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="fin-amount" required min="0.01">
+                        </div>
+                        <div class="form-group" id="fin-date-group">
+                            <label for="fin-date" id="fin-date-label">Data</label>
+                            <input type="date" class="form-control" id="fin-date" required>
+                        </div>
+                    </div>
+                    <div class="form-group" id="fin-client-group" style="display: none;">
+                        <label for="fin-client-select">Vincular Cliente (Opcional)</label>
+                        <select class="form-control" id="fin-client-select">
+                            <!-- Injetado via JS -->
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-financeiro')">Cancelar</button>
+                <button type="submit" form="form-financeiro" class="btn btn-primary">Salvar Lançamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ajuste Manual de Estoque (Inventário) -->
+    <div id="modal-stock-adjust" class="modal-overlay">
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>Ajuste Manual de Estoque (Inventário)</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-stock-adjust')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-stock-adjust">
+                    <div class="form-group">
+                        <label for="adj-product-select">Selecionar Produto</label>
+                        <select class="form-control" id="adj-product-select" required>
+                            <!-- Injetado por JS -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Estoque Atual</label>
+                            <input type="text" class="form-control" id="adj-current-stock" readonly style="background: rgba(255, 255, 255, 0.05);">
+                        </div>
+                        <div class="form-group">
+                            <label for="adj-new-stock">Novo Estoque Físico</label>
+                            <input type="number" class="form-control" id="adj-new-stock" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="adj-reason">Motivo do Ajuste</label>
+                        <select class="form-control" id="adj-reason" required>
+                            <option value="Inventário / Correção">Inventário / Correção</option>
+                            <option value="Perda / Danificado">Perda / Danificado</option>
+                            <option value="Roubo / Furto">Roubo / Furto</option>
+                            <option value="Consumo Interno">Consumo Interno / Uso</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-stock-adjust')">Cancelar</button>
+                <button type="submit" form="form-stock-adjust" class="btn btn-primary">Salvar Ajuste</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Backup & Restauração de Dados -->
+    <div id="modal-backup" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Gerenciamento de Dados (Segurança e Backup)</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-backup')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">Como o sistema armazena os dados localmente no navegador, recomendamos fazer backups periódicos para evitar perdas acidentais se o cache do navegador for limpo.</p>
+                
+                <div class="glass-card">
+                    <h4>Exportar Backup</h4>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Gere um arquivo `.json` contendo todos os cadastros, produtos, histórico de vendas e fluxo de caixa.</p>
+                    <button class="btn btn-primary" id="btn-export-backup">
+                        <i class="fa-solid fa-download"></i> Baixar Arquivo de Backup
+                    </button>
+                </div>
+
+                <div class="glass-card">
+                    <h4>Importar Backup</h4>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Atenção: Ao restaurar um backup anterior, todos os dados atuais serão substituídos pelo arquivo importado.</p>
+                    <input type="file" id="input-import-backup" accept=".json" style="display: none;">
+                    <button class="btn btn-danger" onclick="document.getElementById('input-import-backup').click()">
+                        <i class="fa-solid fa-upload"></i> Selecionar Arquivo para Restaurar
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-backup')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Histórico de Vendas (PDV) -->
+    <div id="modal-sales-history" class="modal-overlay">
+        <div class="modal-container" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Histórico de Vendas Realizadas</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-sales-history')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1.25rem;">Consulte o histórico de cupons emitidos. Vendedores podem reimprimir cupons. Administradores podem efetuar o cancelamento (estorno de estoque e financeiro).</p>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="custom-table" style="font-size: 0.85rem;">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Data</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th style="width: 170px; text-align: center;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-history-tbody">
+                            <!-- Injetado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-sales-history')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Quitação de Débito (Fiado) -->
+    <div id="modal-client-payment" class="modal-overlay">
+        <div class="modal-container" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>Recebimento de Fiado (Débito)</h3>
+                <button class="modal-close" onclick="app.closeModal('modal-client-payment')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-client-payment">
+                    <input type="hidden" id="pay-client-id">
+                    <div class="glass-card" style="padding: 1.25rem; text-align: center; margin-bottom: 1.25rem; border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.03);">
+                        <span class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Saldo Devedor Atual</span>
+                        <h4 id="pay-client-balance" class="text-danger" style="font-size: 1.8rem; font-weight: 800; margin-top: 0.25rem;">R$ 0,00</h4>
+                    </div>
+                    <div class="form-group">
+                        <label for="pay-amount">Valor Pago pelo Cliente (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="pay-amount" required min="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="pay-method">Forma de Pagamento</label>
+                        <select class="form-control" id="pay-method" required>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Pix">Pix</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.closeModal('modal-client-payment')">Cancelar</button>
+                <button type="submit" form="form-client-payment" class="btn btn-success">
+                    <i class="fa-solid fa-circle-check"></i> Registrar Recebimento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay de Login (Bloqueia tela inicial até fazer login) -->
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #07090e; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1.5rem; overflow: hidden;">
+        <style>
+            @keyframes float-blob-1 {
+                0% { transform: translate(0px, 0px) scale(1); }
+                33% { transform: translate(30px, -50px) scale(1.1); }
+                66% { transform: translate(-20px, 20px) scale(0.95); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            @keyframes float-blob-2 {
+                0% { transform: translate(0px, 0px) scale(1); }
+                50% { transform: translate(-40px, 40px) scale(0.9); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            @keyframes pulse-glow {
+                0% { box-shadow: 0 0 15px rgba(14, 165, 233, 0.4); }
+                50% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.65), 0 0 40px rgba(14, 165, 233, 0.3); }
+                100% { box-shadow: 0 0 15px rgba(14, 165, 233, 0.4); }
+            }
+            .login-blob {
+                position: absolute;
+                border-radius: 50%;
+                filter: blur(80px);
+                opacity: 0.25;
+                z-index: 1;
+            }
+            .login-blob-1 {
+                width: 350px;
+                height: 350px;
+                background: radial-gradient(circle, var(--primary) 0%, #8b5cf6 100%);
+                top: -50px;
+                left: -50px;
+                animation: float-blob-1 15s infinite alternate ease-in-out;
+            }
+            .login-blob-2 {
+                width: 400px;
+                height: 400px;
+                background: radial-gradient(circle, #8b5cf6 0%, #ec4899 100%);
+                bottom: -100px;
+                right: -100px;
+                animation: float-blob-2 18s infinite alternate ease-in-out;
+            }
+            .login-card-container {
+                position: relative;
+                z-index: 2;
+                width: 100%;
+                max-width: 420px;
+            }
+            .login-glass-card {
+                background: rgba(13, 20, 37, 0.45);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 24px;
+                padding: 2.75rem 2.25rem;
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+                transition: transform 0.3s ease, border-color 0.3s ease;
+            }
+            .login-glass-card:hover {
+                border-color: rgba(255, 255, 255, 0.12);
+            }
+            .login-emblem {
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+                border-radius: 16px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 900;
+                font-size: 1.8rem;
+                color: white;
+                margin-bottom: 1rem;
+                animation: pulse-glow 3s infinite ease-in-out;
+            }
+            .login-input-wrapper {
+                position: relative;
+                margin-bottom: 1.25rem;
+            }
+            .login-input-icon {
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: rgba(255, 255, 255, 0.3);
+                font-size: 0.95rem;
+                transition: color 0.2s ease;
+                pointer-events: none;
+            }
+            .login-field {
+                padding-left: 42px !important;
+                background: rgba(8, 12, 22, 0.6) !important;
+                border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                height: 48px;
+                font-size: 0.92rem;
+                transition: all 0.2s ease !important;
+            }
+            .login-field:focus {
+                border-color: var(--primary) !important;
+                background: rgba(8, 12, 22, 0.8) !important;
+                box-shadow: 0 0 15px rgba(14, 165, 233, 0.25) !important;
+            }
+            .login-field:focus + .login-input-icon {
+                color: var(--primary);
+            }
+            .btn-login-submit {
+                width: 100%;
+                height: 48px;
+                background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+                color: white;
+                font-size: 0.95rem;
+                font-weight: 700;
+                border-radius: 12px;
+                border: none;
+                box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35);
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            .btn-login-submit:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 30px rgba(14, 165, 233, 0.5), 0 0 15px rgba(139, 92, 246, 0.3);
+            }
+            .btn-login-submit:active {
+                transform: translateY(0);
+            }
+            .password-toggle-btn {
+                position: absolute;
+                right: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                color: rgba(255, 255, 255, 0.3);
+                cursor: pointer;
+                padding: 0;
+                font-size: 0.95rem;
+                transition: color 0.2s ease;
+                z-index: 5;
+            }
+            .password-toggle-btn:hover {
+                color: var(--text-main);
+            }
+            
+            @media (max-width: 768px) {
+                .login-glass-card {
+                    background: rgba(13, 20, 37, 0.95) !important;
+                    backdrop-filter: none !important;
+                    -webkit-backdrop-filter: none !important;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                }
+                .login-blob {
+                    display: none;
+                }
+            }
+        </style>
+
+        <div class="login-blob login-blob-1"></div>
+        <div class="login-blob login-blob-2"></div>
+
+        <div class="login-card-container">
+            <div class="login-glass-card">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div class="login-emblem">M</div>
+                    <h2 style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px;">
+                        MEI Fácil <span style="background: linear-gradient(90deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Gestão</span>
+                    </h2>
+                    <p class="text-muted" style="font-size: 0.82rem; margin-top: 0.35rem; font-weight: 500;">Autenticação administrativa do lojista</p>
+                </div>
+                
+                <form id="form-login">
+                    <div class="form-group" style="margin-bottom: 1.15rem;">
+                        <label for="login-username" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">Usuário</label>
+                        <div class="login-input-wrapper">
+                            <input type="text" class="form-control login-field" id="login-username" placeholder="Digite seu usuário" required autocomplete="username" autocapitalize="none" autocorrect="off">
+                            <i class="fa-solid fa-user login-input-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label for="login-password" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">Senha</label>
+                        <div class="login-input-wrapper">
+                            <input type="password" class="form-control login-field" id="login-password" placeholder="Digite sua senha" required autocomplete="current-password" autocapitalize="none" autocorrect="off">
+                            <i class="fa-solid fa-lock login-input-icon"></i>
+                            <button type="button" class="password-toggle-btn" id="btn-toggle-password" title="Mostrar/Ocultar senha">
+                                <i class="fa-solid fa-eye" id="password-toggle-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="login-error-msg" class="text-danger" style="display: none; font-size: 0.82rem; font-weight: 600; text-align: center; margin-bottom: 1.25rem; background: rgba(244, 63, 94, 0.08); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(244, 63, 94, 0.2);">
+                        <i class="fa-solid fa-circle-exclamation"></i> Usuário ou senha incorretos.
+                    </div>
+                    
+                    <button type="submit" class="btn-login-submit">
+                        <i class="fa-solid fa-right-to-bracket"></i> Acessar Painel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIMPEZA DE URL E IMPORTS -->
+    <script>
+        // Remove "?" ou parâmetros residuais da barra de endereço sem recarregar a página
+        if (window.location.search) {
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        }
+    </script>
+    <script type="module">
+        import { db } from './js/database.js';
+        import { app } from './js/app.js';
+        
+        // Inicializa o banco de dados local
+        db.init();
+        
+        // Inicializa o app e expõe globalmente para atalhos em eventos HTML
+        window.db = db;
+        window.app = app;
+        app.init();
+
+        // Desativa/Desregistra o Service Worker e limpa cache do PWA no desenvolvimento para evitar arquivos travados
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (const registration of registrations) {
+                    registration.unregister().then(success => {
+                        if (success) console.log('Service Worker antigo desregistrado com sucesso.');
+                    });
+                }
+            });
+        }
+        if ('caches' in window) {
+            caches.keys().then(keys => {
+                keys.forEach(key => caches.delete(key));
+                console.log('Caches locais limpos.');
+            });
+        }
+    </script>
+</body>
+</html>

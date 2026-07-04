@@ -1,0 +1,29 @@
+# app.yaml
+# Especificação da Aplicação para Deploy Automatizado na DigitalOcean App Platform
+
+name: mei-gestao-app
+region: nyc # Pode ser alterado para outra região no painel, ex: nyc, fra, ams
+services:
+  - name: mei-gestao-service
+    github:
+      # O DigitalOcean conectará ao seu repositório GitHub automaticamente
+      repo: seu-usuario-github/mei-gestao 
+      branch: main
+      deploy_on_push: true
+    dockerfile_path: Dockerfile
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${DATABASE_URL} # Injetado com segurança no painel da DigitalOcean
+      - key: DATABASE_SSL
+        scope: RUN_TIME
+        value: "true"
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        value: ${JWT_SECRET} # Injetado com segurança no painel da DigitalOcean
+      - key: PORT
+        scope: RUN_TIME
+        value: "3000"
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs # Instância padrão de entrada (US$ 5.00/mês)
