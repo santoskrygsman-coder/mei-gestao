@@ -299,6 +299,28 @@ export const app = {
         }).format(value || 0);
     },
 
+    formatDate(dateVal) {
+        if (!dateVal) return '---';
+        try {
+            if (dateVal instanceof Date) {
+                return dateVal.toLocaleDateString('pt-BR');
+            }
+            const dateStr = String(dateVal);
+            if (dateStr.includes('T') || dateStr.includes('Z')) {
+                const d = new Date(dateStr);
+                if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+            }
+            if (dateStr.length === 10 && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return new Date(dateStr + 'T12:00:00').toLocaleDateString('pt-BR');
+            }
+            const d = new Date(dateStr);
+            return !isNaN(d.getTime()) ? d.toLocaleDateString('pt-BR') : '---';
+        } catch (e) {
+            console.error('Erro ao formatar data:', e);
+            return '---';
+        }
+    },
+
     // Simula sinal sonoro e efeito visual de leitura de código de barras
     triggerBeep() {
         const flash = document.getElementById('scanner-flash');
@@ -336,7 +358,7 @@ export const app = {
             const rawPhone = client ? (client.phone || '') : '';
             const phone = rawPhone.replace(/\D/g, ''); // Apenas números
 
-            const formattedDate = new Date(doc.date + 'T12:00:00').toLocaleDateString('pt-BR');
+            const formattedDate = this.formatDate(doc.date);
 
             const titleMap = {
                 orcamento: 'ORÇAMENTO (SEM VALOR FISCAL)',

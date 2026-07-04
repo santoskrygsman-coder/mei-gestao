@@ -57,7 +57,7 @@ export const financeiro = {
                 const tr = document.createElement('tr');
                 const classValue = t.type === 'receita' ? 'text-success font-weight-600' : 'text-danger font-weight-600';
                 const prefix = t.type === 'receita' ? '+' : '-';
-                const formattedDate = new Date(t.date + 'T12:00:00').toLocaleDateString('pt-BR');
+                const formattedDate = app.formatDate(t.date);
 
                 tr.innerHTML = `
                     <td>${formattedDate}</td>
@@ -93,7 +93,7 @@ export const financeiro = {
                 const tr = document.createElement('tr');
                 const statusClass = a.status === 'pago' ? 'badge-success' : 'badge-warning';
                 const statusText = a.status === 'pago' ? 'Pago' : 'Pendente';
-                const formattedDate = new Date((a.dueDate || a.due_date) + 'T12:00:00').toLocaleDateString('pt-BR');
+                const formattedDate = app.formatDate(a.dueDate || a.due_date);
 
                 tr.innerHTML = `
                     <td>${a.description || a.desc}</td>
@@ -135,7 +135,7 @@ export const financeiro = {
                 const tr = document.createElement('tr');
                 const statusClass = a.status === 'pago' ? 'badge-success' : 'badge-warning';
                 const statusText = a.status === 'pago' ? 'Recebido' : 'Pendente';
-                const formattedDate = new Date((a.dueDate || a.due_date) + 'T12:00:00').toLocaleDateString('pt-BR');
+                const formattedDate = app.formatDate(a.dueDate || a.due_date);
 
                 tr.innerHTML = `
                     <td>${a.description || a.desc}</td>

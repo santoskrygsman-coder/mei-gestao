@@ -662,7 +662,7 @@ export const pdv = {
     </div>`;
             });
 
-            const formattedDate = new Date(doc.date + 'T12:00:00').toLocaleDateString('pt-BR');
+            const formattedDate = app.formatDate(doc.date);
 
             const titleMap = {
                 orcamento: 'ORÇAMENTO (SEM VALOR FISCAL)',
@@ -854,7 +854,7 @@ export const pdv = {
                     ? `<span class="badge badge-danger">Cancelada</span>`
                     : `<span class="badge badge-success">Finalizada</span>`;
 
-                const formattedDate = new Date(doc.date + 'T12:00:00').toLocaleDateString('pt-BR');
+                const formattedDate = app.formatDate(doc.date);
 
                 let btnCancel = '';
                 if (isCancelled) {

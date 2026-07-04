@@ -47,7 +47,7 @@ export const documentos = {
 
                 const type = typeLabels[doc.type] || { text: doc.type, badge: 'badge-secondary' };
                 const status = statusLabels[doc.status] || { text: doc.status, badge: 'badge-secondary' };
-                const formattedDate = new Date(doc.date + 'T12:00:00').toLocaleDateString('pt-BR');
+                const formattedDate = app.formatDate(doc.date);
 
                 tr.innerHTML = `
                     <td><strong style="color: #60a5fa;">${doc.id}</strong></td>

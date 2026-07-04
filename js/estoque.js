@@ -451,7 +451,7 @@ export const estoque = {
             document.getElementById('xml-invoice-details').style.display = 'block';
             document.getElementById('xml-info-chave').textContent = chave ? `${chave.substring(0, 6)}...${chave.substring(38)}` : 'Não informada';
             document.getElementById('xml-info-emit').textContent = emitNome;
-            document.getElementById('xml-info-date').textContent = new Date(formattedDate + 'T12:00:00').toLocaleDateString('pt-BR');
+            document.getElementById('xml-info-date').textContent = app.formatDate(formattedDate);
 
             this.renderXmlConciliationGrid();
 
