@@ -263,7 +263,7 @@ module.exports = {
                 .filter(p => p.company_id === Number(companyId))
                 .map(p => ({ ...p, minStock: p.minStock !== undefined ? p.minStock : p.min_stock }));
         }
-        const res = await pool.query('SELECT id, company_id, name, cost, price, stock, min_stock as "minStock" FROM products WHERE company_id = $1 ORDER BY name ASC', [companyId]);
+        const res = await pool.query('SELECT id, company_id, barcode, name, category, cost, price, stock, min_stock as "minStock" FROM products WHERE company_id = $1 ORDER BY name ASC', [companyId]);
         return res.rows.map(p => ({
             ...p,
             cost: Number(p.cost),
@@ -512,13 +512,14 @@ module.exports = {
 
         const docId = doc.id || ('DOC-' + Math.floor(Math.random() * 900000 + 100000));
         const { type, client_id, client_name, date, discount, addition, total, creditUsed, remaining, status, paymentMethod, due_date } = doc;
+        const finalDate = date || new Date().toISOString().split('T')[0];
         
         await pool.query('BEGIN');
         try {
             await pool.query(`
                 INSERT INTO documents (id, company_id, type, client_id, client_name, date, discount, addition, total, credit_used, remaining, status, payment_method, due_date)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-            `, [docId, companyId, type, client_id, client_name, date || new Date(), discount || 0, addition || 0, total, creditUsed || 0, remaining || total, status || 'finalizado', paymentMethod, due_date]);
+            `, [docId, companyId, type, client_id, client_name, finalDate, discount || 0, addition || 0, total, creditUsed || 0, remaining || total, status || 'finalizado', paymentMethod, due_date]);
 
             if (doc.items && doc.items.length) {
                 for (let item of doc.items) {
@@ -529,7 +530,7 @@ module.exports = {
                 }
             }
             await pool.query('COMMIT');
-            return { ...doc, id: docId };
+            return { ...doc, id: docId, date: finalDate };
         } catch (e) {
             await pool.query('ROLLBACK');
             throw e;
