@@ -92,6 +92,26 @@ export const app = {
             btnLogout.addEventListener('click', () => this.handleLogout());
         }
 
+        // Configura máscaras de inputs em tempo real (CPF, CNPJ e Telefones)
+        const applyMask = (elementId, maskFunc) => {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.addEventListener('input', (e) => {
+                    const cursor = e.target.selectionStart;
+                    const oldLen = e.target.value.length;
+                    e.target.value = maskFunc(e.target.value);
+                    const newLen = e.target.value.length;
+                    e.target.setSelectionRange(cursor + (newLen - oldLen), cursor + (newLen - oldLen));
+                });
+            }
+        };
+
+        applyMask('reg-cnpj', this.formatDocument);
+        applyMask('cfg-cnpj', this.formatDocument);
+        applyMask('cli-doc', this.formatDocument);
+        applyMask('cfg-phone', this.formatPhone);
+        applyMask('cli-phone', this.formatPhone);
+
         this.checkLoginStatus();
 
         // Controle do Menu Hambúrguer (Mobile)
@@ -358,6 +378,41 @@ export const app = {
         } catch (e) {
             console.error('Erro ao formatar data:', e);
             return '---';
+        }
+    },
+
+    formatDocument(value) {
+        if (!value) return '';
+        const clean = value.replace(/\D/g, '');
+        if (clean.length <= 11) {
+            return clean
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+                .replace(/\.(\d{3})(\d)/, '.$1-$2')
+                .substring(0, 14);
+        } else {
+            return clean
+                .replace(/^(\d{2})(\d)/, '$1.$2')
+                .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+                .replace(/\.(\d{3})(\d)/, '.$1/$2')
+                .replace(/(\d{4})(\d)/, '$1-$2')
+                .substring(0, 18);
+        }
+    },
+
+    formatPhone(value) {
+        if (!value) return '';
+        const clean = value.replace(/\D/g, '');
+        if (clean.length <= 10) {
+            return clean
+                .replace(/^(\d{2})(\d)/g, '($1) $2')
+                .replace(/(\d{4})(\d)/, '$1-$2')
+                .substring(0, 14);
+        } else {
+            return clean
+                .replace(/^(\d{2})(\d)/g, '($1) $2')
+                .replace(/(\d{5})(\d)/, '$1-$2')
+                .substring(0, 15);
         }
     },
 
