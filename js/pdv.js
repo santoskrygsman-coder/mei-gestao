@@ -603,6 +603,12 @@ export const pdv = {
                 paymentMethod: payMethod
             };
 
+            if (payMethod === 'Crediário') {
+                const dueDateVal = document.getElementById('checkout-due-date').value;
+                doc.due_date = dueDateVal;
+                doc.dueDate = dueDateVal;
+            }
+
             const saved = await db.saveDocument(doc);
 
             if (creditUsed > 0) {

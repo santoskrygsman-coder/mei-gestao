@@ -519,7 +519,7 @@ module.exports = {
             await pool.query(`
                 INSERT INTO documents (id, company_id, type, client_id, client_name, date, discount, addition, total, credit_used, remaining, status, payment_method, due_date)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-            `, [docId, companyId, type, client_id, client_name, finalDate, discount || 0, addition || 0, total, creditUsed || 0, remaining || total, status || 'finalizado', paymentMethod, due_date]);
+            `, [docId, companyId, type, client_id, client_name, finalDate, discount || 0, addition || 0, total, creditUsed || 0, remaining || total, status || 'finalizado', paymentMethod, due_date || null]);
 
             if (doc.items && doc.items.length) {
                 for (let item of doc.items) {
@@ -640,13 +640,13 @@ module.exports = {
             const res = await pool.query(`
                 UPDATE accounts SET description=$1, amount=$2, due_date=$3, status=$4
                 WHERE id=$5 AND company_id=$6 RETURNING *
-            `, [description, amount, dueDate, status, id, companyId]);
+            `, [description, amount, dueDate || null, status, id, companyId]);
             return res.rows[0];
         } else {
             const res = await pool.query(`
                 INSERT INTO accounts (company_id, type, description, client_id, amount, due_date, status)
                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
-            `, [companyId, type, description || acc.desc, client_id, amount, dueDate, status || 'pendente']);
+            `, [companyId, type, description || acc.desc, client_id, amount, dueDate || null, status || 'pendente']);
             return res.rows[0];
         }
     },
