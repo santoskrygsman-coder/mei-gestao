@@ -410,52 +410,7 @@ export const app = {
 
     // --- GLOBAL EVENTS SETUP ---
     setupGlobalEvents() {
-        // Modal de Backup / Dados
-        const btnBackup = document.getElementById('btn-backup-modal');
-        if (btnBackup) {
-            btnBackup.addEventListener('click', () => this.openModal('modal-backup'));
-        }
 
-        // Exportar Backup
-        const btnExport = document.getElementById('btn-export-backup');
-        if (btnExport) {
-            btnExport.addEventListener('click', async () => {
-                try {
-                    const dataStr = await db.getBackupData();
-                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                    
-                    const exportFileDefaultName = `backup_mei_gestao_${new Date().toISOString().split('T')[0]}.json`;
-                    
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUri);
-                    linkElement.setAttribute('download', exportFileDefaultName);
-                    linkElement.click();
-                } catch (e) {
-                    await app.showAlert('Erro ao exportar backup: ' + e.message);
-                }
-            });
-        }
-
-        // Importar Backup
-        const inputImport = document.getElementById('input-import-backup');
-        if (inputImport) {
-            inputImport.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const success = await db.importData(event.target.result);
-                    if (success) {
-                        await app.showAlert('Dados restaurados com sucesso! O sistema será recarregado.');
-                        window.location.reload();
-                    } else {
-                        await app.showAlert('Falha ao restaurar dados. Verifique se o arquivo JSON é válido.');
-                    }
-                };
-                reader.readAsText(file);
-            });
-        }
 
         // Ações rápidas do Dashboard
         const btnCompraRapida = document.getElementById('btn-compra-rapida');
