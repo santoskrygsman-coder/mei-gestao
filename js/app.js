@@ -240,7 +240,7 @@ export const app = {
             }
 
             // 3. Notas de Atualização
-            const LAST_UPDATE = '2026-07-09-v2.2.1';
+            const LAST_UPDATE = '2026-07-09-v3.0.0';
             const seenUpdate = localStorage.getItem('update_seen_date');
             if (seenUpdate !== LAST_UPDATE) count++;
 
@@ -271,7 +271,7 @@ export const app = {
             const alerts = [];
             
             // 1. Atualizações
-            const LAST_UPDATE = '2026-07-09-v2.2.1';
+            const LAST_UPDATE = '2026-07-09-v3.0.0';
             const seenUpdate = localStorage.getItem('update_seen_date');
             if (seenUpdate !== LAST_UPDATE) {
                 alerts.push(`
@@ -457,7 +457,7 @@ export const app = {
     
     closeUpdateNotes() {
         this.closeModal('modal-update-notes');
-        const LAST_UPDATE = '2026-07-09-v2.2.1';
+        const LAST_UPDATE = '2026-07-09-v3.0.0';
         localStorage.setItem('update_seen_date', LAST_UPDATE);
         this.updateNotificationsBadge();
     },
