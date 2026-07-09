@@ -1606,6 +1606,37 @@
         </div>
     </div>
 
+    <!-- Floating Support Button -->
+    <a href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20sistema%20MEI%20F%C3%A1cil" target="_blank" class="floating-support-btn" title="Contatar Suporte">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- Modal Notas de Atualização -->
+    <div class="modal-overlay" id="modal-update-notes">
+        <div class="modal" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-bullhorn text-primary"></i> Novidades no Sistema!</h2>
+                <button class="btn-close" onclick="app.closeUpdateNotes()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="line-height: 1.6; color: var(--text-light);">
+                <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                    <strong class="text-primary">Versão 2.1 (Julho/2026)</strong>
+                </div>
+                <ul style="padding-left: 20px; margin-bottom: 20px;">
+                    <li style="margin-bottom: 10px;"><strong>Gráficos Estáveis:</strong> Melhoramos a estabilidade do banco de dados na nuvem para garantir a exibição perfeita dos números e comparativos.</li>
+                    <li style="margin-bottom: 10px;"><strong>Máscaras e Validações:</strong> Correção nas máscaras de CNPJ, CPF e Telefones com novos limites inteligentes e prevenção de erros.</li>
+                    <li style="margin-bottom: 10px;"><strong>Suporte Rápido:</strong> Adicionamos um botão flutuante de suporte via WhatsApp para você tirar dúvidas a qualquer momento.</li>
+                </ul>
+                <p>Nós estamos constantemente trabalhando para melhorar sua experiência. Obrigado por usar o MEI Fácil Gestão!</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="app.closeUpdateNotes()" style="width: 100%;">Entendi, Continuar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- LIMPEZA DE URL E IMPORTS -->
     <script>
         // Remove "?" ou parâmetros residuais da barra de endereço sem recarregar a página

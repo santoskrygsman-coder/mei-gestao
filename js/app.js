@@ -146,6 +146,7 @@ export const app = {
         const loggedUser = sessionStorage.getItem('loggedUser');
         if (loggedUser) {
             this.switchView('dashboard');
+            this.checkUpdateNotes();
         }
     },
 
@@ -281,6 +282,22 @@ export const app = {
                 document.body.classList.remove('modal-open-receipt');
             }
         }
+    },
+
+    checkUpdateNotes() {
+        const LAST_UPDATE = '2026-07-09-v2.1';
+        const updateSeen = localStorage.getItem('update_seen_date');
+        if (updateSeen !== LAST_UPDATE) {
+            setTimeout(() => {
+                this.openModal('modal-update-notes');
+            }, 800);
+        }
+    },
+    
+    closeUpdateNotes() {
+        this.closeModal('modal-update-notes');
+        const LAST_UPDATE = '2026-07-09-v2.1';
+        localStorage.setItem('update_seen_date', LAST_UPDATE);
     },
 
     // --- GLOBAL EVENTS SETUP ---
@@ -584,6 +601,7 @@ export const app = {
                 document.getElementById('form-login').reset();
                 this.checkLoginStatus();
                 await this.switchView('dashboard');
+                this.checkUpdateNotes();
             } else {
                 if (errorMsg) errorMsg.style.display = 'block';
             }
