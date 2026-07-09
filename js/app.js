@@ -11,6 +11,53 @@ import { relatorios } from './relatorios.js';
 import { configuracoes } from './configuracoes.js';
 
 export const app = {
+    showAlert(message, title = 'Aviso') {
+        return new Promise(resolve => {
+            document.getElementById('custom-dialog-title').innerHTML = title;
+            document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
+            
+            const footer = document.getElementById('custom-dialog-footer');
+            footer.innerHTML = `<button class="btn btn-primary" id="btn-custom-dialog-ok">OK</button>`;
+            
+            const overlay = document.getElementById('modal-custom-dialog');
+            const btnOk = document.getElementById('btn-custom-dialog-ok');
+            
+            const close = () => {
+                overlay.style.display = 'none';
+                btnOk.removeEventListener('click', close);
+                resolve();
+            };
+            
+            btnOk.addEventListener('click', close);
+            overlay.style.display = 'flex';
+        });
+    },
+
+    showConfirm(message, title = 'Confirmação') {
+        return new Promise(resolve => {
+            document.getElementById('custom-dialog-title').innerHTML = title;
+            document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
+            
+            const footer = document.getElementById('custom-dialog-footer');
+            footer.innerHTML = `
+                <button class="btn btn-secondary" id="btn-custom-dialog-cancel">Cancelar</button>
+                <button class="btn btn-primary" id="btn-custom-dialog-confirm">Confirmar</button>
+            `;
+            
+            const overlay = document.getElementById('modal-custom-dialog');
+            
+            const close = (result) => {
+                overlay.style.display = 'none';
+                resolve(result);
+            };
+            
+            document.getElementById('btn-custom-dialog-cancel').addEventListener('click', () => close(false));
+            document.getElementById('btn-custom-dialog-confirm').addEventListener('click', () => close(true));
+            
+            overlay.style.display = 'flex';
+        });
+    },
+
     currentView: 'dashboard',
     dashboard,
     pdv,
@@ -197,10 +244,10 @@ export const app = {
         const criticalProducts = products.filter(p => p.stock <= 0);
         
         if (criticalProducts.length === 0) {
-            alert('Excelente! Nenhum produto está com estoque crítico no momento.');
+            await app.showAlert('Excelente! Nenhum produto está com estoque crítico no momento.');
         } else {
             const list = criticalProducts.map(p => `- ${p.name}`).join('\n');
-            if (confirm(`Existem ${criticalProducts.length} itens com estoque crítico (Zero):\n\n${list}\n\nDeseja ir para a tela de Estoque agora?`)) {
+            if (await app.showConfirm(`Existem ${criticalProducts.length} itens com estoque crítico (Zero):\n\n${list}\n\nDeseja ir para a tela de Estoque agora?`)) {
                 this.switchView('estoque');
             }
         }
@@ -232,7 +279,7 @@ export const app = {
         if (loggedUser) {
             const adminViews = ['financeiro', 'relatorios', 'configuracoes'];
             if (adminViews.includes(viewName) && loggedUser.role !== 'admin') {
-                alert('Acesso negado: Apenas administradores possuem permissão para esta seção.');
+                await app.showAlert('Acesso negado: Apenas administradores possuem permissão para esta seção.');
                 return;
             }
         }
@@ -357,7 +404,7 @@ export const app = {
         if (typeof html2pdf !== 'undefined') {
             html2pdf().set(opt).from(element).save();
         } else {
-            alert('A biblioteca de PDF ainda não foi carregada. Tente novamente em alguns segundos.');
+            await app.showAlert('A biblioteca de PDF ainda não foi carregada. Tente novamente em alguns segundos.');
         }
     },
 
@@ -384,7 +431,7 @@ export const app = {
                     linkElement.setAttribute('download', exportFileDefaultName);
                     linkElement.click();
                 } catch (e) {
-                    alert('Erro ao exportar backup: ' + e.message);
+                    await app.showAlert('Erro ao exportar backup: ' + e.message);
                 }
             });
         }
@@ -400,10 +447,10 @@ export const app = {
                 reader.onload = async (event) => {
                     const success = await db.importData(event.target.result);
                     if (success) {
-                        alert('Dados restaurados com sucesso! O sistema será recarregado.');
+                        await app.showAlert('Dados restaurados com sucesso! O sistema será recarregado.');
                         window.location.reload();
                     } else {
-                        alert('Falha ao restaurar dados. Verifique se o arquivo JSON é válido.');
+                        await app.showAlert('Falha ao restaurar dados. Verifique se o arquivo JSON é válido.');
                     }
                 };
                 reader.readAsText(file);
@@ -593,14 +640,14 @@ export const app = {
                 })
                 .then(response => {
                     if (response.ok) {
-                        alert('Comprovante enviado com sucesso via WhatsApp!');
+                        await app.showAlert('Comprovante enviado com sucesso via WhatsApp!');
                     } else {
                         throw new Error('Falha no envio do servidor de WhatsApp.');
                     }
                 })
-                .catch(err => {
+                .catch(async err => {
                     console.error('Falha no envio via API', err);
-                    if (confirm('O envio automático falhou. Deseja abrir pelo método clássico (Link do Navegador)?')) {
+                    if (await app.showConfirm('O envio automático falhou. Deseja abrir pelo método clássico (Link do Navegador)?')) {
                         window.open(waUrl, '_blank');
                     }
                 });
@@ -684,7 +731,7 @@ export const app = {
         try {
             const regResult = await db.register(companyName, cnpj, adminName, username, password);
             if (regResult) {
-                alert('Sua empresa foi cadastrada com sucesso! Inicializando painel de controle...');
+                await app.showAlert('Sua empresa foi cadastrada com sucesso! Inicializando painel de controle...');
                 const loginRes = await db.login(username, password);
                 if (loginRes && loginRes.token) {
                     sessionStorage.setItem('token', loginRes.token);

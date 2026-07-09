@@ -131,9 +131,9 @@ export const configuracoes = {
 
             await db.saveConfig(config);
             await this.updateSidebarLayout();
-            alert('Configurações da empresa salvas com sucesso!');
+            await app.showAlert('Configurações da empresa salvas com sucesso!');
         } catch (e) {
-            alert('Erro ao salvar configurações da empresa: ' + e.message);
+            await app.showAlert('Erro ao salvar configurações da empresa: ' + e.message);
         }
     },
 
@@ -146,14 +146,14 @@ export const configuracoes = {
             config.wa_token = document.getElementById('cfg-wa-token').value;
 
             if (config.wa_mode === 'api' && !config.wa_endpoint) {
-                alert('Por favor, informe a URL do Endpoint para o modo de API Dedicada.');
+                await app.showAlert('Por favor, informe a URL do Endpoint para o modo de API Dedicada.');
                 return;
             }
 
             await db.saveConfig(config);
-            alert('Configurações de integração do WhatsApp atualizadas!');
+            await app.showAlert('Configurações de integração do WhatsApp atualizadas!');
         } catch (e) {
-            alert('Erro ao salvar integração: ' + e.message);
+            await app.showAlert('Erro ao salvar integração: ' + e.message);
         }
     },
 
@@ -216,14 +216,14 @@ export const configuracoes = {
         const role = document.getElementById('cfg-user-role').value;
 
         if (!name || !username || (!id && !password)) {
-            alert('Por favor, preencha todos os campos do usuário.');
+            await app.showAlert('Por favor, preencha todos os campos do usuário.');
             return;
         }
 
         try {
             const users = await db.getUsers();
             if (!id && users.some(u => u.username === username)) {
-                alert('Este login de usuário já está cadastrado. Escolha outro.');
+                await app.showAlert('Este login de usuário já está cadastrado. Escolha outro.');
                 return;
             }
 
@@ -231,24 +231,24 @@ export const configuracoes = {
             if (id) userData.id = Number(id);
 
             await db.saveUser(userData);
-            alert('Usuário salvo com sucesso!');
+            await app.showAlert('Usuário salvo com sucesso!');
             
             document.getElementById('form-config-user').reset();
             document.getElementById('cfg-user-id').value = '';
 
             await this.renderUsersList();
         } catch (e) {
-            alert('Erro ao salvar usuário: ' + e.message);
+            await app.showAlert('Erro ao salvar usuário: ' + e.message);
         }
     },
 
     async deleteUser(id) {
-        if (!confirm('Deseja realmente remover esta conta de acesso?')) return;
+        if (!await app.showConfirm('Deseja realmente remover esta conta de acesso?')) return;
         try {
             await db.deleteUser(id);
             await this.renderUsersList();
         } catch (e) {
-            alert('Erro ao deletar usuário: ' + e.message);
+            await app.showAlert('Erro ao deletar usuário: ' + e.message);
         }
     }
 };

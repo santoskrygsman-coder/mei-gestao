@@ -231,17 +231,17 @@ export const estoque = {
             app.closeModal('modal-product');
             await this.render();
         } catch (e) {
-            alert('Erro ao salvar produto: ' + e.message);
+            await app.showAlert('Erro ao salvar produto: ' + e.message);
         }
     },
 
     async deleteProduct(id) {
-        if (confirm('Deseja realmente excluir este produto?')) {
+        if (await app.showConfirm('Deseja realmente excluir este produto?')) {
             try {
                 await db.deleteProduct(id);
                 await this.render();
             } catch (e) {
-                alert('Erro ao excluir produto: ' + e.message);
+                await app.showAlert('Erro ao excluir produto: ' + e.message);
             }
         }
     },
@@ -339,7 +339,7 @@ export const estoque = {
         const newSellingPrice = parseFloat(document.getElementById('pur-new-price').value);
 
         if (!productId) {
-            alert('Por favor, selecione um produto.');
+            await app.showAlert('Por favor, selecione um produto.');
             return;
         }
 
@@ -348,11 +348,11 @@ export const estoque = {
             if (updated) {
                 app.closeModal('modal-purchase');
                 await this.render();
-                alert(`Entrada efetuada com sucesso! Novo custo médio de ${updated.name}: ${app.formatCurrency(updated.cost)}`);
+                await app.showAlert(`Entrada efetuada com sucesso! Novo custo médio de ${updated.name}: ${app.formatCurrency(updated.cost)}`);
                 if (app.currentView === 'dashboard') await app.dashboard.render();
             }
         } catch (e) {
-            alert('Erro ao registrar compra de estoque: ' + e.message);
+            await app.showAlert('Erro ao registrar compra de estoque: ' + e.message);
         }
     },
 
@@ -376,7 +376,7 @@ export const estoque = {
 
     handleXmlFile(file) {
         if (!file.name.endsWith('.xml') && file.type !== 'text/xml') {
-            alert('Por favor, selecione um arquivo XML válido.');
+            await app.showAlert('Por favor, selecione um arquivo XML válido.');
             return;
         }
 
@@ -394,7 +394,7 @@ export const estoque = {
             
             const infNFe = xmlDoc.querySelector('infNFe');
             if (!infNFe) {
-                alert('O arquivo XML carregado não possui a tag <infNFe>. Certifique-se de que é uma Nota Fiscal de Produto (NF-e) válida.');
+                await app.showAlert('O arquivo XML carregado não possui a tag <infNFe>. Certifique-se de que é uma Nota Fiscal de Produto (NF-e) válida.');
                 return;
             }
 
@@ -435,7 +435,7 @@ export const estoque = {
             });
 
             if (items.length === 0) {
-                alert('Nenhum item de produto encontrado na nota.');
+                await app.showAlert('Nenhum item de produto encontrado na nota.');
                 return;
             }
 
@@ -457,7 +457,7 @@ export const estoque = {
 
         } catch (err) {
             console.error(err);
-            alert('Falha ao processar arquivo XML da nota. Formato inválido ou corrompido.');
+            await app.showAlert('Falha ao processar arquivo XML da nota. Formato inválido ou corrompido.');
         }
     },
 
@@ -559,13 +559,13 @@ export const estoque = {
 
             app.closeModal('modal-xml-import');
             await this.render();
-            alert(`Sucesso! Nota fiscal importada com sucesso. Estoque incrementado e custo médio recalculado.`);
+            await app.showAlert(`Sucesso! Nota fiscal importada com sucesso. Estoque incrementado e custo médio recalculado.`);
             
             if (app.currentView === 'dashboard') {
                 await app.dashboard.render();
             }
         } catch (e) {
-            alert('Erro ao confirmar importação: ' + e.message);
+            await app.showAlert('Erro ao confirmar importação: ' + e.message);
         }
     },
 
@@ -581,7 +581,7 @@ export const estoque = {
             const products = await db.getProducts();
 
             if (products.length === 0) {
-                alert('Não há produtos cadastrados para realizar ajuste.');
+                await app.showAlert('Não há produtos cadastrados para realizar ajuste.');
                 return;
             }
 
@@ -627,7 +627,7 @@ export const estoque = {
         const reason = selectReason.value;
 
         if (isNaN(newStock) || newStock < 0) {
-            alert('Por favor, insira um estoque válido.');
+            await app.showAlert('Por favor, insira um estoque válido.');
             return;
         }
 
@@ -640,7 +640,7 @@ export const estoque = {
             const delta = newStock - currentStock;
 
             if (delta === 0) {
-                alert('O novo estoque é igual ao atual. Nenhuma alteração realizada.');
+                await app.showAlert('O novo estoque é igual ao atual. Nenhuma alteração realizada.');
                 app.closeModal('modal-stock-adjust');
                 return;
             }
@@ -661,13 +661,13 @@ export const estoque = {
 
             app.closeModal('modal-stock-adjust');
             await this.render();
-            alert('Ajuste de estoque salvo com sucesso!');
+            await app.showAlert('Ajuste de estoque salvo com sucesso!');
 
             if (app.currentView === 'dashboard') {
                 await app.dashboard.render();
             }
         } catch (e) {
-            alert('Erro ao ajustar estoque: ' + e.message);
+            await app.showAlert('Erro ao ajustar estoque: ' + e.message);
         }
     }
 };

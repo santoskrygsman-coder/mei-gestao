@@ -13,7 +13,7 @@ export const pdv = {
 
     init() {
         // Atalhos de teclado no PDV
-        window.addEventListener('keydown', (e) => {
+        window.addEventListener('keydown', async (e) => {
             if (app.currentView !== 'pdv') return;
 
             if (e.key === 'F2') {
@@ -26,7 +26,7 @@ export const pdv = {
                 e.preventDefault();
                 this.toggleSuspension();
             } else if (e.key === 'Escape') {
-                if (this.cart.length > 0 && confirm('Deseja realmente limpar o caixa atual?')) {
+                if (this.cart.length > 0 && await app.showConfirm('Deseja realmente limpar o caixa atual?')) {
                     e.preventDefault();
                     this.clearPDV();
                 }
@@ -221,7 +221,7 @@ export const pdv = {
                 }
                 this.renderCart();
             } else {
-                alert(`Produto com código de barras [${barcode}] não cadastrado!`);
+                await app.showAlert(`Produto com código de barras [${barcode}] não cadastrado!`);
             }
             
             // Mantém foco no input
@@ -243,7 +243,7 @@ export const pdv = {
             );
 
             if (matches.length === 0) {
-                alert('Nenhum produto encontrado com este nome.');
+                await app.showAlert('Nenhum produto encontrado com este nome.');
             } else if (matches.length === 1) {
                 await this.scanBarcode(matches[0].barcode);
             } else {
@@ -346,7 +346,7 @@ export const pdv = {
     // --- ORÇAMENTO ---
     async saveAsOrcamento() {
         if (this.cart.length === 0) {
-            alert('Carrinho vazio.');
+            await app.showAlert('Carrinho vazio.');
             return;
         }
 
@@ -373,21 +373,21 @@ export const pdv = {
             const saved = await db.saveDocument(doc);
             this.clearPDV();
             await this.showReceipt(saved);
-            alert('Orçamento salvo com sucesso!');
+            await app.showAlert('Orçamento salvo com sucesso!');
         } catch (e) {
-            alert('Erro ao salvar orçamento: ' + e.message);
+            await app.showAlert('Erro ao salvar orçamento: ' + e.message);
         }
     },
 
     // --- CONDICIONAL ---
     async saveAsCondicional() {
         if (this.cart.length === 0) {
-            alert('Carrinho vazio.');
+            await app.showAlert('Carrinho vazio.');
             return;
         }
 
         if (this.selectedClientId === 'c1') {
-            alert('Por favor, selecione um cliente cadastrado para saídas condicionais. Não é possível gerar condicional para "Consumidor Geral".');
+            await app.showAlert('Por favor, selecione um cliente cadastrado para saídas condicionais. Não é possível gerar condicional para "Consumidor Geral".');
             return;
         }
 
@@ -398,7 +398,7 @@ export const pdv = {
             // Verifica estoque e bloqueia itens
             for (const item of this.cart) {
                 if (item.product.stock < item.qty) {
-                    alert(`Estoque insuficiente de [${item.product.name}]. Estoque atual: ${item.product.stock}`);
+                    await app.showAlert(`Estoque insuficiente de [${item.product.name}]. Estoque atual: ${item.product.stock}`);
                     return;
                 }
             }
@@ -425,23 +425,23 @@ export const pdv = {
             const saved = await db.saveDocument(doc);
             this.clearPDV();
             await this.showReceipt(saved);
-            alert('Saída condicional gerada! Estoque reservado.');
+            await app.showAlert('Saída condicional gerada! Estoque reservado.');
         } catch (e) {
-            alert('Erro ao salvar condicional: ' + e.message);
+            await app.showAlert('Erro ao salvar condicional: ' + e.message);
         }
     },
 
     // --- VENDA / PAGAMENTO ---
     async openCheckout() {
         if (this.cart.length === 0) {
-            alert('Carrinho vazio.');
+            await app.showAlert('Carrinho vazio.');
             return;
         }
 
         // Valida estoque físico antes de abrir checkout
         for (const item of this.cart) {
             if (item.product.stock < item.qty) {
-                alert(`Estoque insuficiente de [${item.product.name}]. Estoque atual: ${item.product.stock}`);
+                await app.showAlert(`Estoque insuficiente de [${item.product.name}]. Estoque atual: ${item.product.stock}`);
                 return;
             }
         }
@@ -553,7 +553,7 @@ export const pdv = {
         const client = this.cachedClients.find(c => c.id === this.selectedClientId);
 
         if (payMethod === 'Crediário' && this.selectedClientId === 'c1') {
-            alert('Selecione um cliente específico para compras a prazo.');
+            await app.showAlert('Selecione um cliente específico para compras a prazo.');
             return;
         }
 
@@ -571,7 +571,7 @@ export const pdv = {
 
         for (const item of this.cart) {
             if (item.product.stock < item.qty) {
-                alert(`Estoque insuficiente de [${item.product.name}]. Estoque atual: ${item.product.stock}`);
+                await app.showAlert(`Estoque insuficiente de [${item.product.name}]. Estoque atual: ${item.product.stock}`);
                 return;
             }
         }
@@ -610,9 +610,9 @@ export const pdv = {
             this.clearPDV();
             await this.showReceipt(saved);
             
-            alert('Venda finalizada com sucesso!');
+            await app.showAlert('Venda finalizada com sucesso!');
         } catch (e) {
-            alert('Erro ao finalizar venda: ' + e.message);
+            await app.showAlert('Erro ao finalizar venda: ' + e.message);
         }
     },
 
@@ -742,7 +742,7 @@ export const pdv = {
             this.clearPDV();
             this.updateSuspensionUI();
             app.triggerBeep();
-            alert('Venda suspensa! O caixa está livre.');
+            await app.showAlert('Venda suspensa! O caixa está livre.');
         } catch (e) {
             console.error(e);
         }
@@ -783,19 +783,19 @@ export const pdv = {
         }
     },
 
-    toggleSuspension() {
+    async toggleSuspension() {
         if (this.cart.length > 0) {
             this.suspendSale();
         } else if (this.suspendedSales.length > 0) {
             this.resumeSale();
         } else {
-            alert('Não há itens no caixa para pausar, e nenhuma venda está suspensa.');
+            await app.showAlert('Não há itens no caixa para pausar, e nenhuma venda está suspensa.');
         }
     },
 
-    sendReceiptWhatsApp() {
+    async sendReceiptWhatsApp() {
         if (!this.activeReceiptDoc) {
-            alert('Nenhum comprovante disponível para compartilhar.');
+            await app.showAlert('Nenhum comprovante disponível para compartilhar.');
             return;
         }
         app.sendReceiptWhatsApp(this.activeReceiptDoc);
@@ -876,13 +876,13 @@ export const pdv = {
     },
 
     async cancelSale(docId) {
-        if (!confirm(`Tem certeza absoluta que deseja CANCELAR a venda [${docId}]?\n\nEsta ação irá:\n1. Devolver os produtos ao estoque.\n2. Remover o lançamento financeiro correspondente.`)) {
+        if (!await app.showConfirm(`Tem certeza absoluta que deseja CANCELAR a venda [${docId}]?\n\nEsta ação irá:\n1. Devolver os produtos ao estoque.\n2. Remover o lançamento financeiro correspondente.`)) {
             return;
         }
 
         try {
             await db.cancelDocument(docId);
-            alert(`Venda [${docId}] cancelada e estoque/financeiro estornados com sucesso!`);
+            await app.showAlert(`Venda [${docId}] cancelada e estoque/financeiro estornados com sucesso!`);
             
             await this.openSalesHistory();
             
@@ -890,7 +890,7 @@ export const pdv = {
             if (app.currentView === 'estoque') await app.estoque.render();
             if (app.currentView === 'clientes') await app.clientes.render();
         } catch (e) {
-            alert('Erro ao cancelar venda: ' + e.message);
+            await app.showAlert('Erro ao cancelar venda: ' + e.message);
         }
     }
 };

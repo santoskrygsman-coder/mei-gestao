@@ -476,11 +476,43 @@ module.exports = {
         }
         return documents;
     },
+    
+    async getNextDocumentId(companyId) {
+        if (useMock) {
+            let maxNum = 0;
+            if (mockDb.documents) {
+                for (const d of mockDb.documents) {
+                    if (d.company_id === companyId && d.id.startsWith('DOC-')) {
+                        const num = parseInt(d.id.replace('DOC-', ''), 10);
+                        if (!isNaN(num) && num > maxNum) maxNum = num;
+                    }
+                }
+            }
+            return `DOC-${String(maxNum + 1).padStart(6, '0')}`;
+        }
+        
+        const res = await pool.query(`
+            SELECT id FROM documents 
+            WHERE company_id = $1 AND id LIKE 'DOC-%'
+        `, [companyId]);
+        
+        let maxNum = 0;
+        for (const row of res.rows) {
+            const num = parseInt(row.id.replace('DOC-', ''), 10);
+            if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
+        return `DOC-${String(maxNum + 1).padStart(6, '0')}`;
+    },
 
     async saveDocument(companyId, doc) {
+        let docId = doc.id;
+        if (!docId) {
+            docId = await this.getNextDocumentId(companyId);
+        }
+
         if (useMock) {
             const newDoc = {
-                id: doc.id || ('DOC-' + Math.floor(Math.random() * 900000 + 100000)),
+                id: docId,
                 company_id: Number(companyId),
                 type: doc.type,
                 client_id: doc.client_id,
@@ -515,7 +547,6 @@ module.exports = {
             return newDoc;
         }
 
-        const docId = doc.id || ('DOC-' + Math.floor(Math.random() * 900000 + 100000));
         const { type, client_id, client_name, date, discount, addition, total, creditUsed, remaining, status, paymentMethod, due_date } = doc;
         const finalDate = date || new Date().toISOString().split('T')[0];
         

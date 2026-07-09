@@ -264,43 +264,43 @@ export const financeiro = {
             await this.render();
             if (app.currentView === 'dashboard') await app.dashboard.render();
         } catch (e) {
-            alert('Erro ao registrar lançamento: ' + e.message);
+            await app.showAlert('Erro ao registrar lançamento: ' + e.message);
         }
     },
 
     async payAccount(id) {
-        if (confirm('Deseja confirmar a liquidação financeira deste título?')) {
+        if (await app.showConfirm('Deseja confirmar a liquidação financeira deste título?')) {
             try {
                 await db.payAccount(id);
-                alert('Título liquidado com sucesso!');
+                await app.showAlert('Título liquidado com sucesso!');
                 await this.render();
                 if (app.currentView === 'dashboard') await app.dashboard.render();
             } catch (e) {
-                alert('Erro ao pagar conta: ' + e.message);
+                await app.showAlert('Erro ao pagar conta: ' + e.message);
             }
         }
     },
 
     async deleteTransaction(id) {
-        if (confirm('Excluir este lançamento do caixa? (Isso não altera saldos do estoque ou contas)')) {
+        if (await app.showConfirm('Excluir este lançamento do caixa? (Isso não altera saldos do estoque ou contas)')) {
             try {
                 await db.request('DELETE', `/api/transactions/${id}`);
                 await this.render();
                 if (app.currentView === 'dashboard') await app.dashboard.render();
             } catch (e) {
-                alert('Erro ao excluir transação: ' + e.message);
+                await app.showAlert('Erro ao excluir transação: ' + e.message);
             }
         }
     },
 
     async deleteAccount(id) {
-        if (confirm('Excluir este título? (Atenção: se for um crediário ativo, o saldo devedor do cliente não será reajustado automaticamente)')) {
+        if (await app.showConfirm('Excluir este título? (Atenção: se for um crediário ativo, o saldo devedor do cliente não será reajustado automaticamente)')) {
             try {
                 await db.request('DELETE', `/api/accounts/${id}`);
                 await this.render();
                 if (app.currentView === 'dashboard') await app.dashboard.render();
             } catch (e) {
-                alert('Erro ao excluir título: ' + e.message);
+                await app.showAlert('Erro ao excluir título: ' + e.message);
             }
         }
     }

@@ -112,7 +112,7 @@ export const documentos = {
     },
 
     async cancelOrcamento(id) {
-        if (confirm('Deseja realmente cancelar este orçamento?')) {
+        if (await app.showConfirm('Deseja realmente cancelar este orçamento?')) {
             try {
                 const docs = await db.getDocuments();
                 const doc = docs.find(d => d.id === id);
@@ -122,7 +122,7 @@ export const documentos = {
                     await this.render();
                 }
             } catch (e) {
-                alert('Erro ao cancelar orçamento: ' + e.message);
+                await app.showAlert('Erro ao cancelar orçamento: ' + e.message);
             }
         }
     },
@@ -157,7 +157,7 @@ export const documentos = {
                 app.pdv.openCheckout();
             }
         } catch (e) {
-            alert('Erro ao faturar orçamento: ' + e.message);
+            await app.showAlert('Erro ao faturar orçamento: ' + e.message);
         }
     },
 
@@ -258,7 +258,7 @@ export const documentos = {
                 
                 app.closeModal('modal-condicional');
                 await this.render();
-                alert('Produtos devolvidos com sucesso! Estoque recomposto.');
+                await app.showAlert('Produtos devolvidos com sucesso! Estoque recomposto.');
                 return;
             }
 
@@ -297,7 +297,7 @@ export const documentos = {
             
             app.openModal('modal-checkout');
         } catch (e) {
-            alert('Erro ao fechar condicional: ' + e.message);
+            await app.showAlert('Erro ao fechar condicional: ' + e.message);
         }
     },
 
@@ -361,10 +361,10 @@ export const documentos = {
                 app.pdv.showReceipt(originalDoc);
             }
 
-            alert('Condicional faturado com sucesso!');
+            await app.showAlert('Condicional faturado com sucesso!');
             await this.render();
         } catch (e) {
-            alert('Erro ao finalizar venda do condicional: ' + e.message);
+            await app.showAlert('Erro ao finalizar venda do condicional: ' + e.message);
         }
     }
 };

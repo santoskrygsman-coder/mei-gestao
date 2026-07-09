@@ -1686,5 +1686,20 @@
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Modal Global de Alerta e Confirmação -->
+    <div class="modal-overlay" id="modal-custom-dialog">
+        <div class="modal glass-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 id="custom-dialog-title">Aviso</h2>
+            </div>
+            <div class="modal-body">
+                <p id="custom-dialog-message" style="margin-bottom: 20px; color: var(--text-color);"></p>
+            </div>
+            <div class="modal-footer" id="custom-dialog-footer" style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <!-- Botões dinâmicos entram aqui -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>

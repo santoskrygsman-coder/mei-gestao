@@ -128,21 +128,21 @@ export const clientes = {
             app.closeModal('modal-client');
             await this.render();
         } catch (e) {
-            alert('Erro ao salvar cliente: ' + e.message);
+            await app.showAlert('Erro ao salvar cliente: ' + e.message);
         }
     },
 
     async delete(id) {
         if (id === 'c1') {
-            alert('Não é possível excluir o Consumidor Geral.');
+            await app.showAlert('Não é possível excluir o Consumidor Geral.');
             return;
         }
-        if (confirm('Deseja realmente excluir este cliente?')) {
+        if (await app.showConfirm('Deseja realmente excluir este cliente?')) {
             try {
                 await db.deleteClient(id);
                 await this.render();
             } catch (e) {
-                alert('Erro ao excluir cliente: ' + e.message);
+                await app.showAlert('Erro ao excluir cliente: ' + e.message);
             }
         }
     },
@@ -171,13 +171,13 @@ export const clientes = {
         const method = document.getElementById('pay-method').value;
 
         if (amountPaid <= 0) {
-            alert('Por favor, digite um valor de pagamento válido.');
+            await app.showAlert('Por favor, digite um valor de pagamento válido.');
             return;
         }
 
         try {
             await db.saveClientPayment(clientId, amountPaid, method);
-            alert(`Recebimento de ${app.formatCurrency(amountPaid)} registrado com sucesso!`);
+            await app.showAlert(`Recebimento de ${app.formatCurrency(amountPaid)} registrado com sucesso!`);
             app.closeModal('modal-client-payment');
             
             // Recarrega visualizações
@@ -186,7 +186,7 @@ export const clientes = {
             if (app.currentView === 'financeiro') await app.financeiro.render();
             if (app.currentView === 'relatorios') await app.relatorios.render();
         } catch (e) {
-            alert('Erro ao registrar quitação: ' + e.message);
+            await app.showAlert('Erro ao registrar quitação: ' + e.message);
         }
     }
 };
