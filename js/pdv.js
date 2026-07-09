@@ -606,32 +606,6 @@ export const pdv = {
 
             const saved = await db.saveDocument(doc);
 
-            if (creditUsed > 0) {
-                await db.updateClientBalance(this.selectedClientId, -creditUsed);
-            }
-
-            if (remaining > 0) {
-                if (payMethod === 'Crediário') {
-                    const dueDate = document.getElementById('checkout-due-date').value;
-                    await db.saveAccount({
-                        type: 'receber',
-                        desc: `Venda a prazo: ${saved.id}`,
-                        client_id: this.selectedClientId,
-                        amount: remaining,
-                        dueDate: dueDate,
-                        status: 'pendente'
-                    });
-                    await db.updateClientBalance(this.selectedClientId, -remaining);
-                } else {
-                    await db.addTransaction({
-                        type: 'receita',
-                        desc: `Venda PDV: ${saved.id}${creditUsed > 0 ? ' (Abatido Crédito)' : ''}`,
-                        amount: remaining,
-                        category: 'Vendas'
-                    });
-                }
-            }
-
             app.closeModal('modal-checkout');
             this.clearPDV();
             await this.showReceipt(saved);
