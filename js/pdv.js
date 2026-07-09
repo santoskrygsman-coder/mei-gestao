@@ -403,10 +403,7 @@ export const pdv = {
                 }
             }
 
-            // Decrementa o estoque físico (reserva)
-            for (const item of this.cart) {
-                await db.adjustStock(item.product.id, -item.qty);
-            }
+            // O backend (server.js) já fará a dedução do estoque no POST /api/documents
 
             const doc = {
                 type: 'condicional',
@@ -580,9 +577,7 @@ export const pdv = {
         }
 
         try {
-            for (const item of this.cart) {
-                await db.adjustStock(item.product.id, -item.qty);
-            }
+            // O backend (server.js) já fará a dedução do estoque no POST /api/documents
 
             const doc = {
                 type: 'venda',
