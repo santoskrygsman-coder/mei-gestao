@@ -52,7 +52,8 @@ export const dashboard = {
         const totalVendasAno = transactions
             .filter(t => {
                 if (t.type !== 'receita') return false;
-                const tDate = new Date(t.date + 'T12:00:00');
+                const tDateStr = String(t.date).split('T')[0];
+                const tDate = new Date(tDateStr + 'T12:00:00');
                 return tDate.getFullYear() === currentYear;
             })
             .reduce((sum, t) => sum + t.amount, 0);
@@ -87,7 +88,8 @@ export const dashboard = {
         const faturamento = transactions
             .filter(t => {
                 if (t.type !== 'receita') return false;
-                const tDate = new Date(t.date + 'T12:00:00');
+                const tDateStr = String(t.date).split('T')[0];
+                const tDate = new Date(tDateStr + 'T12:00:00');
                 return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
             })
             .reduce((sum, t) => sum + t.amount, 0);
@@ -275,7 +277,10 @@ export const dashboard = {
             }
 
             const chartData = days.map(dateStr => {
-                const daily = transactions.filter(t => t.date === dateStr);
+                const daily = transactions.filter(t => {
+                    const tDateStr = String(t.date).split('T')[0];
+                    return tDateStr === dateStr;
+                });
                 const receita = daily.filter(t => t.type === 'receita').reduce((sum, t) => sum + t.amount, 0);
                 const despesa = daily.filter(t => t.type === 'despesa').reduce((sum, t) => sum + t.amount, 0);
                 return {
@@ -325,8 +330,14 @@ export const dashboard = {
             const chartData = daysA.map((dateStr, idx) => {
                 const prevDateStr = daysB[idx];
 
-                const salesA = transactions.filter(t => t.date === dateStr && t.type === 'receita' && (t.category === 'Vendas' || t.category === 'Fiado'));
-                const salesB = transactions.filter(t => t.date === prevDateStr && t.type === 'receita' && (t.category === 'Vendas' || t.category === 'Fiado'));
+                const salesA = transactions.filter(t => {
+                    const tDateStr = String(t.date).split('T')[0];
+                    return tDateStr === dateStr && t.type === 'receita' && (t.category === 'Vendas' || t.category === 'Fiado');
+                });
+                const salesB = transactions.filter(t => {
+                    const tDateStr = String(t.date).split('T')[0];
+                    return tDateStr === prevDateStr && t.type === 'receita' && (t.category === 'Vendas' || t.category === 'Fiado');
+                });
 
                 const totalA = salesA.reduce((sum, t) => sum + t.amount, 0);
                 const totalB = salesB.reduce((sum, t) => sum + t.amount, 0);
