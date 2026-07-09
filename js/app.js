@@ -23,13 +23,13 @@ export const app = {
             const btnOk = document.getElementById('btn-custom-dialog-ok');
             
             const close = () => {
-                overlay.style.display = 'none';
+                overlay.classList.remove('active');
                 btnOk.removeEventListener('click', close);
                 resolve();
             };
             
             btnOk.addEventListener('click', close);
-            overlay.style.display = 'flex';
+            overlay.classList.add('active');
         });
     },
 
@@ -47,14 +47,14 @@ export const app = {
             const overlay = document.getElementById('modal-custom-dialog');
             
             const close = (result) => {
-                overlay.style.display = 'none';
+                overlay.classList.remove('active');
                 resolve(result);
             };
             
             document.getElementById('btn-custom-dialog-cancel').addEventListener('click', () => close(false));
             document.getElementById('btn-custom-dialog-confirm').addEventListener('click', () => close(true));
             
-            overlay.style.display = 'flex';
+            overlay.classList.add('active');
         });
     },
 
