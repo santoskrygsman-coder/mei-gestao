@@ -115,6 +115,7 @@ app.post('/api/auth/login', async (req, res) => {
         res.json({
             token,
             user: {
+                id: user.id,
                 name: user.name,
                 username: user.username,
                 role: user.role,
