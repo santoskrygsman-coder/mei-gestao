@@ -264,16 +264,23 @@ export const dashboard = {
         const btnSales = document.getElementById('btn-chart-sales');
         const titleEl = document.getElementById('dash-chart-title');
 
+        const getLocalDateStr = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
+
         if (this.chartType === 'cashflow') {
             if (btnCashflow) btnCashflow.style.borderColor = 'var(--primary)';
             if (btnSales) btnSales.style.borderColor = 'var(--panel-border)';
-            if (titleEl) titleEl.textContent = 'Fluxo de Caixa (Últimos 7 dias)';
+            if (titleEl) titleEl.innerHTML = 'Fluxo de Caixa <span style="font-size:0.8rem; margin-left: 10px; font-weight: normal;"><span style="color:var(--success);">■ Entradas</span> <span style="color:var(--danger); margin-left: 5px;">■ Saídas</span></span>';
 
             const days = [];
             for (let i = 6; i >= 0; i--) {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
-                days.push(d.toISOString().split('T')[0]);
+                days.push(getLocalDateStr(d));
             }
 
             const chartData = days.map(dateStr => {
@@ -298,8 +305,8 @@ export const dashboard = {
                 col.className = 'bar-column';
                 col.style.width = '14%';
 
-                const recHeight = (day.receita / maxVal) * 110;
-                const despHeight = (day.despesa / maxVal) * 110;
+                const recHeight = Math.max((day.receita / maxVal) * 110, day.receita > 0 ? 5 : 3);
+                const despHeight = Math.max((day.despesa / maxVal) * 110, day.despesa > 0 ? 5 : 3);
 
                 col.innerHTML = `
                     <div style="display: flex; gap: 4px; width: 100%; height: 110px; justify-content: center; align-items: flex-end;">
@@ -313,18 +320,18 @@ export const dashboard = {
         } else {
             if (btnSales) btnSales.style.borderColor = 'var(--primary)';
             if (btnCashflow) btnCashflow.style.borderColor = 'var(--panel-border)';
-            if (titleEl) titleEl.textContent = 'Comparativo de Vendas (Esta vs Anterior)';
+            if (titleEl) titleEl.innerHTML = 'Comparativo Vendas <span style="font-size:0.8rem; margin-left: 10px; font-weight: normal;"><span style="color:var(--primary);">■ Esta Semana</span> <span style="color:#8b5cf6; margin-left: 5px;">■ Anterior</span></span>';
 
             const daysA = [];
             const daysB = [];
             for (let i = 6; i >= 0; i--) {
                 const dA = new Date();
                 dA.setDate(dA.getDate() - i);
-                daysA.push(dA.toISOString().split('T')[0]);
+                daysA.push(getLocalDateStr(dA));
 
                 const dB = new Date();
                 dB.setDate(dB.getDate() - (i + 7));
-                daysB.push(dB.toISOString().split('T')[0]);
+                daysB.push(getLocalDateStr(dB));
             }
 
             const chartData = daysA.map((dateStr, idx) => {
@@ -356,8 +363,8 @@ export const dashboard = {
                 col.className = 'bar-column';
                 col.style.width = '14%';
 
-                const heightA = (day.totalA / maxVal) * 110;
-                const heightB = (day.totalB / maxVal) * 110;
+                const heightA = Math.max((day.totalA / maxVal) * 110, day.totalA > 0 ? 5 : 3);
+                const heightB = Math.max((day.totalB / maxVal) * 110, day.totalB > 0 ? 5 : 3);
 
                 col.innerHTML = `
                     <div style="display: flex; gap: 4px; width: 100%; height: 110px; justify-content: center; align-items: flex-end;">
