@@ -186,7 +186,7 @@ export const configuracoes = {
                 const tr = document.createElement('tr');
                 
                 // Não pode excluir o admin base nem a si mesmo
-                const isProtected = u.id === 1 || u.username === 'admin' || u.id === loggedUser.id;
+                const isProtected = String(u.id) === '1' || u.username === 'admin' || String(u.id) === String(loggedUser.id);
                 
                 const btnDeleteHtml = isProtected
                     ? `<button class="btn btn-secondary btn-icon" disabled style="opacity: 0.4;" title="Conta protegida ou em uso"><i class="fa-solid fa-lock"></i></button>`
