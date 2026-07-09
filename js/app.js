@@ -383,36 +383,34 @@ export const app = {
 
     formatDocument(value) {
         if (!value) return '';
-        const clean = value.replace(/\D/g, '');
+        let clean = value.replace(/\D/g, '');
         if (clean.length <= 11) {
-            return clean
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
-                .replace(/\.(\d{3})(\d)/, '.$1-$2')
-                .substring(0, 14);
+            clean = clean.replace(/(\d{3})(\d)/, '$1.$2');
+            clean = clean.replace(/(\d{3})(\d)/, '$1.$2');
+            clean = clean.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            return clean;
         } else {
-            return clean
-                .replace(/^(\d{2})(\d)/, '$1.$2')
-                .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-                .replace(/\.(\d{3})(\d)/, '.$1/$2')
-                .replace(/(\d{4})(\d)/, '$1-$2')
-                .substring(0, 18);
+            clean = clean.substring(0, 14);
+            clean = clean.replace(/^(\d{2})(\d)/, '$1.$2');
+            clean = clean.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+            clean = clean.replace(/\.(\d{3})(\d)/, '.$1/$2');
+            clean = clean.replace(/(\d{4})(\d)/, '$1-$2');
+            return clean;
         }
     },
 
     formatPhone(value) {
         if (!value) return '';
-        const clean = value.replace(/\D/g, '');
+        let clean = value.replace(/\D/g, '');
+        clean = clean.substring(0, 11);
         if (clean.length <= 10) {
-            return clean
-                .replace(/^(\d{2})(\d)/g, '($1) $2')
-                .replace(/(\d{4})(\d)/, '$1-$2')
-                .substring(0, 14);
+            clean = clean.replace(/^(\d{2})(\d)/g, '($1) $2');
+            clean = clean.replace(/(\d{4})(\d)/, '$1-$2');
+            return clean;
         } else {
-            return clean
-                .replace(/^(\d{2})(\d)/g, '($1) $2')
-                .replace(/(\d{5})(\d)/, '$1-$2')
-                .substring(0, 15);
+            clean = clean.replace(/^(\d{2})(\d)/g, '($1) $2');
+            clean = clean.replace(/(\d{5})(\d)/, '$1-$2');
+            return clean;
         }
     },
 
