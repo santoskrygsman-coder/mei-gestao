@@ -304,11 +304,18 @@ export const dashboard = {
                 const col = document.createElement('div');
                 col.className = 'bar-column';
                 col.style.width = '14%';
+                col.style.position = 'relative';
+                col.onmouseover = () => { const tip = col.querySelector('.custom-tooltip'); if(tip) tip.style.display = 'block'; };
+                col.onmouseout = () => { const tip = col.querySelector('.custom-tooltip'); if(tip) tip.style.display = 'none'; };
 
                 const recHeight = Math.max((day.receita / maxVal) * 110, day.receita > 0 ? 5 : 3);
                 const despHeight = Math.max((day.despesa / maxVal) * 110, day.despesa > 0 ? 5 : 3);
 
                 col.innerHTML = `
+                    <div class="custom-tooltip" style="display:none; position:absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--panel-bg); border: 1px solid var(--panel-border); padding: 8px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 10; white-space: nowrap; font-size: 0.8rem; pointer-events: none;">
+                        <div style="color:var(--success); font-weight:bold; margin-bottom:3px;">Entradas: ${app.formatCurrency(day.receita)}</div>
+                        <div style="color:var(--danger); font-weight:bold;">Saídas: ${app.formatCurrency(day.despesa)}</div>
+                    </div>
                     <div style="display: flex; gap: 4px; width: 100%; height: 110px; justify-content: center; align-items: flex-end;">
                         <div class="bar-visual receita" style="height: ${recHeight}px; width: 10px;" title="Entradas: ${app.formatCurrency(day.receita)}"></div>
                         <div class="bar-visual despesa" style="height: ${despHeight}px; width: 10px;" title="Saídas: ${app.formatCurrency(day.despesa)}"></div>
@@ -362,11 +369,18 @@ export const dashboard = {
                 const col = document.createElement('div');
                 col.className = 'bar-column';
                 col.style.width = '14%';
+                col.style.position = 'relative';
+                col.onmouseover = () => { const tip = col.querySelector('.custom-tooltip'); if(tip) tip.style.display = 'block'; };
+                col.onmouseout = () => { const tip = col.querySelector('.custom-tooltip'); if(tip) tip.style.display = 'none'; };
 
                 const heightA = Math.max((day.totalA / maxVal) * 110, day.totalA > 0 ? 5 : 3);
                 const heightB = Math.max((day.totalB / maxVal) * 110, day.totalB > 0 ? 5 : 3);
 
                 col.innerHTML = `
+                    <div class="custom-tooltip" style="display:none; position:absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--panel-bg); border: 1px solid var(--panel-border); padding: 8px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 10; white-space: nowrap; font-size: 0.8rem; pointer-events: none;">
+                        <div style="color:var(--primary); font-weight:bold; margin-bottom:3px;">Esta Sem: ${app.formatCurrency(day.totalA)}</div>
+                        <div style="color:#8b5cf6; font-weight:bold;">Anterior: ${app.formatCurrency(day.totalB)}</div>
+                    </div>
                     <div style="display: flex; gap: 4px; width: 100%; height: 110px; justify-content: center; align-items: flex-end;">
                         <div class="bar-visual receita" style="height: ${heightA}px; width: 10px; background: linear-gradient(to top, rgba(14,165,233,0.2) 0%, var(--primary) 100%); box-shadow: 0 0 10px rgba(14,165,233,0.15);" title="Esta Semana: ${app.formatCurrency(day.totalA)}"></div>
                         <div class="bar-visual despesa" style="height: ${heightB}px; width: 10px; background: linear-gradient(to top, rgba(139,92,246,0.2) 0%, #8b5cf6 100%); box-shadow: 0 0 10px rgba(139,92,246,0.15);" title="Semana Anterior: ${app.formatCurrency(day.totalB)}"></div>
