@@ -81,9 +81,9 @@
                     <h1 id="view-title">Painel de Controle</h1>
                 </div>
                 <div class="header-actions">
-                    <div id="notifications-bell" style="position: relative; cursor: pointer; margin-right: 15px;" onclick="app.showStockAlerts()" title="Alertas de Estoque">
+                    <div id="notifications-bell" style="position: relative; cursor: pointer; margin-right: 15px;" onclick="app.openNotifications()" title="Central de Notificações">
                         <i class="fa-solid fa-bell" style="font-size: 1.2rem; color: var(--text-muted);"></i>
-                        <span id="stock-alert-badge" style="display: none; position: absolute; top: -5px; right: -8px; background: var(--danger); color: white; border-radius: 50%; font-size: 0.65rem; font-weight: bold; width: 16px; height: 16px; text-align: center; line-height: 16px; box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);">0</span>
+                        <span id="notifications-badge" style="display: none; position: absolute; top: -5px; right: -8px; background: var(--danger); color: white; border-radius: 50%; font-size: 0.65rem; font-weight: bold; width: 16px; height: 16px; text-align: center; line-height: 16px; box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);">0</span>
                     </div>
                     <div id="header-clock" class="text-muted" style="font-size: 0.9rem; font-weight: 500;">02/07/2026 09:16</div>
                 </div>
@@ -1653,6 +1653,27 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
+    <!-- Modal Central de Notificações -->
+    <div id="modal-notifications" class="modal-overlay">
+        <div class="modal-container glass-card" style="max-width: 500px; padding: 0;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.75rem; margin: 0;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    Central de Notificações
+                </h3>
+                <button class="modal-close" onclick="app.closeModal('modal-notifications')">&times;</button>
+            </div>
+            <div class="modal-body" id="notifications-list" style="padding: 1.5rem; max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Notificações geradas via JS -->
+            </div>
+            <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
+                <span class="text-muted" style="font-size: 0.85rem;">Estas notificações são calculadas em tempo real.</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Global de Alerta e Confirmação -->
     <div class="modal-overlay" id="modal-custom-dialog">
         <div class="modal glass-card" style="max-width: 400px;">

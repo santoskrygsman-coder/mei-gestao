@@ -217,17 +217,38 @@ export const app = {
         updateClock();
     },
 
-    async updateStockAlerts() {
+    async updateNotificationsBadge() {
         try {
+            let count = 0;
+            
+            // 1. Estoque Zerado
             const products = await db.getProducts();
             const criticalProducts = products.filter(p => p.stock <= 0);
-            const badge = document.getElementById('stock-alert-badge');
+            if (criticalProducts.length > 0) count++;
+
+            // 2. Limite MEI Anual
+            const transactions = await db.getTransactions();
+            const currentYear = new Date().getFullYear();
+            const receitasAno = transactions
+                .filter(t => t.type === 'receita' && t.date.startsWith(currentYear.toString()))
+                .reduce((acc, curr) => acc + curr.value, 0);
             
+            if (receitasAno >= 81000) {
+                count++; // Atingiu limite
+            } else if (receitasAno >= 81000 * 0.9) {
+                count++; // Alerta de 90%
+            }
+
+            // 3. Notas de Atualização
+            const LAST_UPDATE = '2026-07-09-v2.2.1';
+            const seenUpdate = localStorage.getItem('update_seen_date');
+            if (seenUpdate !== LAST_UPDATE) count++;
+
+            const badge = document.getElementById('notifications-badge');
             if (badge) {
-                if (criticalProducts.length > 0) {
-                    badge.textContent = criticalProducts.length;
+                if (count > 0) {
+                    badge.textContent = count;
                     badge.style.display = 'block';
-                    // Efeito pulsar
                     badge.style.animation = 'pulse-danger 2s infinite';
                 } else {
                     badge.style.display = 'none';
@@ -235,21 +256,80 @@ export const app = {
                 }
             }
         } catch (e) {
-            console.error('Erro ao atualizar alertas de estoque:', e);
+            console.error('Erro ao atualizar alertas:', e);
         }
     },
 
-    async showStockAlerts() {
-        const products = await db.getProducts();
-        const criticalProducts = products.filter(p => p.stock <= 0);
+    async openNotifications() {
+        const listDiv = document.getElementById('notifications-list');
+        if (!listDiv) return;
         
-        if (criticalProducts.length === 0) {
-            await app.showAlert('Excelente! Nenhum produto está com estoque crítico no momento.');
-        } else {
-            const list = criticalProducts.map(p => `- ${p.name}`).join('\n');
-            if (await app.showConfirm(`Existem ${criticalProducts.length} itens com estoque crítico (Zero):\n\n${list}\n\nDeseja ir para a tela de Estoque agora?`)) {
-                this.switchView('estoque');
+        listDiv.innerHTML = '<div style="text-align: center; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>';
+        this.openModal('modal-notifications');
+
+        try {
+            const alerts = [];
+            
+            // 1. Atualizações
+            const LAST_UPDATE = '2026-07-09-v2.2.1';
+            const seenUpdate = localStorage.getItem('update_seen_date');
+            if (seenUpdate !== LAST_UPDATE) {
+                alerts.push(`
+                    <div class="glass-card" style="border-left: 4px solid var(--primary);">
+                        <h4 style="margin: 0 0 0.5rem 0; color: var(--primary);"><i class="fa-solid fa-star"></i> Nova Atualização Disponível!</h4>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Uma nova versão do sistema com melhorias está disponível. <a href="#" onclick="app.closeModal('modal-notifications'); app.openModal('modal-update-notes'); return false;" style="color: var(--primary); font-weight: 500;">Ler Notas de Atualização</a>.</p>
+                    </div>
+                `);
             }
+
+            // 2. Limite MEI
+            const transactions = await db.getTransactions();
+            const currentYear = new Date().getFullYear();
+            const receitasAno = transactions
+                .filter(t => t.type === 'receita' && t.date.startsWith(currentYear.toString()))
+                .reduce((acc, curr) => acc + curr.value, 0);
+            
+            if (receitasAno >= 81000) {
+                alerts.push(`
+                    <div class="glass-card" style="border-left: 4px solid var(--danger);">
+                        <h4 style="margin: 0 0 0.5rem 0; color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Limite MEI Ultrapassado!</h4>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Atenção! Você faturou <strong>R$ ${receitasAno.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong> neste ano. O limite do MEI (R$ 81.000,00) foi excedido. Procure um contador para orientações.</p>
+                    </div>
+                `);
+            } else if (receitasAno >= 81000 * 0.9) {
+                alerts.push(`
+                    <div class="glass-card" style="border-left: 4px solid var(--warning);">
+                        <h4 style="margin: 0 0 0.5rem 0; color: var(--warning);"><i class="fa-solid fa-circle-exclamation"></i> Limite MEI Próximo!</h4>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Você já faturou <strong>R$ ${receitasAno.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong> neste ano, atingindo mais de 90% do limite do MEI (R$ 81.000,00).</p>
+                    </div>
+                `);
+            }
+
+            // 3. Estoque Zerado
+            const products = await db.getProducts();
+            const criticalProducts = products.filter(p => p.stock <= 0);
+            if (criticalProducts.length > 0) {
+                alerts.push(`
+                    <div class="glass-card" style="border-left: 4px solid var(--danger);">
+                        <h4 style="margin: 0 0 0.5rem 0; color: var(--danger);"><i class="fa-solid fa-box-open"></i> Produtos sem Estoque</h4>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Você possui <strong>${criticalProducts.length}</strong> produto(s) com estoque zerado no momento. <a href="#" onclick="app.closeModal('modal-notifications'); app.switchView('estoque'); return false;" style="color: var(--primary); font-weight: 500;">Ver Estoque</a>.</p>
+                    </div>
+                `);
+            }
+
+            if (alerts.length === 0) {
+                listDiv.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
+                        <i class="fa-regular fa-bell-slash" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p style="margin: 0;">Tudo certo! Você não tem novas notificações no momento.</p>
+                    </div>
+                `;
+            } else {
+                listDiv.innerHTML = alerts.join('');
+            }
+
+        } catch (e) {
+            listDiv.innerHTML = `<div style="color: var(--danger);">Erro ao carregar notificações: ${e.message}</div>`;
         }
     },
 
@@ -318,7 +398,7 @@ export const app = {
 
     async onViewFocus(viewName) {
         try {
-            this.updateStockAlerts();
+            this.updateNotificationsBadge();
             switch (viewName) {
                 case 'dashboard':
                     await dashboard.render();
@@ -372,19 +452,14 @@ export const app = {
     },
 
     checkUpdateNotes() {
-        const LAST_UPDATE = '2026-07-09-v2.2.1';
-        const updateSeen = localStorage.getItem('update_seen_date');
-        if (updateSeen !== LAST_UPDATE) {
-            setTimeout(() => {
-                this.openModal('modal-update-notes');
-            }, 800);
-        }
+        this.updateNotificationsBadge();
     },
     
     closeUpdateNotes() {
         this.closeModal('modal-update-notes');
         const LAST_UPDATE = '2026-07-09-v2.2.1';
         localStorage.setItem('update_seen_date', LAST_UPDATE);
+        this.updateNotificationsBadge();
     },
 
     async generatePDF(containerId, filename) {
