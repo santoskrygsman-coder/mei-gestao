@@ -387,7 +387,7 @@ export const app = {
         localStorage.setItem('update_seen_date', LAST_UPDATE);
     },
 
-    generatePDF(containerId, filename) {
+    async generatePDF(containerId, filename) {
         const element = document.getElementById(containerId);
         if (!element) return;
         
@@ -638,7 +638,7 @@ export const app = {
                     headers: headers,
                     body: JSON.stringify(payload)
                 })
-                .then(response => {
+                .then(async response => {
                     if (response.ok) {
                         await app.showAlert('Comprovante enviado com sucesso via WhatsApp!');
                     } else {

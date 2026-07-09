@@ -374,7 +374,7 @@ export const estoque = {
         app.openModal('modal-xml-import');
     },
 
-    handleXmlFile(file) {
+    async handleXmlFile(file) {
         if (!file.name.endsWith('.xml') && file.type !== 'text/xml') {
             await app.showAlert('Por favor, selecione um arquivo XML válido.');
             return;
@@ -387,7 +387,7 @@ export const estoque = {
         reader.readAsText(file);
     },
 
-    parseXML(xmlText) {
+    async parseXML(xmlText) {
         try {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
