@@ -1,10 +1,15 @@
 // backend/db.js
 // Camada de Acesso a Dados (DAL) com suporte dual: PostgreSQL ou Mock JSON Local
 
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+
+// Parse PostgreSQL numeric types (OID 1700) as JS floats instead of strings
+types.setTypeParser(1700, function(val) {
+    return parseFloat(val);
+});
 
 let useMock = false;
 let pool = null;
