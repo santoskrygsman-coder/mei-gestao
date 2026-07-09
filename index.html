@@ -84,6 +84,10 @@
                     <h1 id="view-title">Painel de Controle</h1>
                 </div>
                 <div class="header-actions">
+                    <div id="notifications-bell" style="position: relative; cursor: pointer; margin-right: 15px;" onclick="app.showStockAlerts()" title="Alertas de Estoque">
+                        <i class="fa-solid fa-bell" style="font-size: 1.2rem; color: var(--text-muted);"></i>
+                        <span id="stock-alert-badge" style="display: none; position: absolute; top: -5px; right: -8px; background: var(--danger); color: white; border-radius: 50%; font-size: 0.65rem; font-weight: bold; width: 16px; height: 16px; text-align: center; line-height: 16px; box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);">0</span>
+                    </div>
                     <div id="header-clock" class="text-muted" style="font-size: 0.9rem; font-weight: 500;">02/07/2026 09:16</div>
                 </div>
             </header>
@@ -526,6 +530,9 @@
                             </button>
                             <button class="btn btn-secondary" id="btn-report-filter-clear" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
                                 Limpar
+                            </button>
+                            <button class="btn btn-success" id="btn-export-csv" style="padding: 0.45rem 1rem; font-size: 0.85rem;" title="Exportar para Excel (CSV)">
+                                <i class="fa-solid fa-file-csv"></i> Exportar CSV
                             </button>
                             <button class="btn btn-secondary" onclick="window.print()" style="padding: 0.45rem 1rem; font-size: 0.85rem;" title="Salvar Relatório em PDF ou Imprimir">
                                 <i class="fa-solid fa-file-pdf"></i> PDF / Imprimir
@@ -1051,6 +1058,9 @@
                 <button class="btn btn-secondary" onclick="app.closeModal('modal-receipt')">Fechar</button>
                 <button class="btn btn-success" id="btn-receipt-whatsapp">
                     <i class="fa-brands fa-whatsapp"></i> Enviar WhatsApp
+                </button>
+                <button class="btn btn-primary" onclick="app.generatePDF('receipt-container', 'Comprovante_Venda.pdf')" style="background: var(--primary);">
+                    <i class="fa-solid fa-file-pdf"></i> PDF
                 </button>
                 <button class="btn btn-primary" onclick="window.print()">
                     <i class="fa-solid fa-print"></i> Imprimir
@@ -1673,5 +1683,6 @@
             });
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>

@@ -37,6 +37,11 @@ export const relatorios = {
         if (btnExportDevedores) {
             btnExportDevedores.addEventListener('click', () => this.exportDevedoresToExcel());
         }
+
+        const btnExportCaixa = document.getElementById('btn-export-csv');
+        if (btnExportCaixa) {
+            btnExportCaixa.addEventListener('click', () => this.exportCaixaToExcel());
+        }
     },
 
     setDefaultDates() {
@@ -282,6 +287,23 @@ export const relatorios = {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    },
+
+    exportCaixaToExcel() {
+        const transactions = this.cachedTransactions;
+        const filtered = transactions.filter(t => t.date >= this.filterStart && t.date <= this.filterEnd);
+        
+        let csv = 'ID;Data;Tipo;Categoria;Descricao;Valor\n';
+        filtered.forEach(t => {
+            const dataFmt = app.formatDate(t.date);
+            const tipo = t.type === 'receita' ? 'Entrada' : 'Saida';
+            const cat = t.category || '';
+            const desc = (t.description || '').replace(/;/g, ',');
+            const val = t.amount.toFixed(2).replace('.', ',');
+            csv += `${t.id};${dataFmt};${tipo};${cat};${desc};${val}\n`;
+        });
+        
+        this.downloadCSV('fluxo_caixa_exportacao.csv', csv);
     },
 
     exportDreToExcel() {

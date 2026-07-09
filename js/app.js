@@ -161,10 +161,49 @@ export const app = {
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 el.textContent = `${day}/${month}/${year} ${hours}:${minutes}`;
+                
+                // Agendar para o próximo minuto exato
+                const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+                setTimeout(updateClock, msUntilNextMinute);
             }
         };
         updateClock();
-        setInterval(updateClock, 60000);
+    },
+
+    async updateStockAlerts() {
+        try {
+            const products = await db.getProducts();
+            const criticalProducts = products.filter(p => p.stock <= 0);
+            const badge = document.getElementById('stock-alert-badge');
+            
+            if (badge) {
+                if (criticalProducts.length > 0) {
+                    badge.textContent = criticalProducts.length;
+                    badge.style.display = 'block';
+                    // Efeito pulsar
+                    badge.style.animation = 'pulse-danger 2s infinite';
+                } else {
+                    badge.style.display = 'none';
+                    badge.style.animation = 'none';
+                }
+            }
+        } catch (e) {
+            console.error('Erro ao atualizar alertas de estoque:', e);
+        }
+    },
+
+    async showStockAlerts() {
+        const products = await db.getProducts();
+        const criticalProducts = products.filter(p => p.stock <= 0);
+        
+        if (criticalProducts.length === 0) {
+            alert('Excelente! Nenhum produto está com estoque crítico no momento.');
+        } else {
+            const list = criticalProducts.map(p => `- ${p.name}`).join('\n');
+            if (confirm(`Existem ${criticalProducts.length} itens com estoque crítico (Zero):\n\n${list}\n\nDeseja ir para a tela de Estoque agora?`)) {
+                this.switchView('estoque');
+            }
+        }
     },
 
     setupNavigation() {
@@ -232,6 +271,7 @@ export const app = {
 
     async onViewFocus(viewName) {
         try {
+            this.updateStockAlerts();
             switch (viewName) {
                 case 'dashboard':
                     await dashboard.render();
@@ -298,6 +338,27 @@ export const app = {
         this.closeModal('modal-update-notes');
         const LAST_UPDATE = '2026-07-09-v2.1';
         localStorage.setItem('update_seen_date', LAST_UPDATE);
+    },
+
+    generatePDF(containerId, filename) {
+        const element = document.getElementById(containerId);
+        if (!element) return;
+        
+        // Configurações do html2pdf
+        const opt = {
+            margin:       10,
+            filename:     filename || 'documento.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // window.html2pdf deve estar disponível pelo CDN
+        if (typeof html2pdf !== 'undefined') {
+            html2pdf().set(opt).from(element).save();
+        } else {
+            alert('A biblioteca de PDF ainda não foi carregada. Tente novamente em alguns segundos.');
+        }
     },
 
     // --- GLOBAL EVENTS SETUP ---
