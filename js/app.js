@@ -325,7 +325,7 @@ export const app = {
     },
 
     checkUpdateNotes() {
-        const LAST_UPDATE = '2026-07-09-v2.2';
+        const LAST_UPDATE = '2026-07-09-v2.2.1';
         const updateSeen = localStorage.getItem('update_seen_date');
         if (updateSeen !== LAST_UPDATE) {
             setTimeout(() => {
@@ -336,7 +336,7 @@ export const app = {
     
     closeUpdateNotes() {
         this.closeModal('modal-update-notes');
-        const LAST_UPDATE = '2026-07-09-v2.2';
+        const LAST_UPDATE = '2026-07-09-v2.2.1';
         localStorage.setItem('update_seen_date', LAST_UPDATE);
     },
 
