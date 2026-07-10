@@ -15,7 +15,8 @@ export const app = {
         return new Promise(resolve => {
             document.getElementById('custom-dialog-title').innerHTML = title;
             document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
-            document.getElementById('custom-dialog-input').style.display = 'none';
+            const inputField = document.getElementById('custom-dialog-input');
+            if (inputField) inputField.style.display = 'none';
             
             const footer = document.getElementById('custom-dialog-footer');
             footer.innerHTML = `<button class="btn btn-primary" id="btn-custom-dialog-ok">OK</button>`;
@@ -38,7 +39,8 @@ export const app = {
         return new Promise(resolve => {
             document.getElementById('custom-dialog-title').innerHTML = title;
             document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
-            document.getElementById('custom-dialog-input').style.display = 'none';
+            const inputField = document.getElementById('custom-dialog-input');
+            if (inputField) inputField.style.display = 'none';
             
             const footer = document.getElementById('custom-dialog-footer');
             footer.innerHTML = `
@@ -65,7 +67,16 @@ export const app = {
             document.getElementById('custom-dialog-title').innerHTML = title;
             document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
             
-            const inputField = document.getElementById('custom-dialog-input');
+            let inputField = document.getElementById('custom-dialog-input');
+            if (!inputField) {
+                inputField = document.createElement('input');
+                inputField.type = 'text';
+                inputField.id = 'custom-dialog-input';
+                inputField.className = 'form-control';
+                inputField.style.marginTop = '10px';
+                inputField.style.width = '100%';
+                document.getElementById('custom-dialog-message').parentNode.appendChild(inputField);
+            }
             inputField.style.display = 'block';
             inputField.value = '';
             
@@ -86,11 +97,12 @@ export const app = {
             document.getElementById('btn-custom-dialog-cancel').addEventListener('click', () => close(null));
             document.getElementById('btn-custom-dialog-confirm').addEventListener('click', () => close(inputField.value));
             
-            inputField.addEventListener('keypress', (e) => {
+            inputField.onkeypress = (e) => {
                 if (e.key === 'Enter') {
+                    e.preventDefault();
                     close(inputField.value);
                 }
-            });
+            };
             
             overlay.classList.add('active');
             setTimeout(() => inputField.focus(), 100);
