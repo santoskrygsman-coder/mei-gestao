@@ -58,7 +58,8 @@ export const documentos = {
                     finalizado: { text: 'Finalizado', badge: 'badge-success' },
                     cancelado: { text: 'Cancelado', badge: 'badge-danger' },
                     devolvido: { text: 'Devolvido', badge: 'badge-info' },
-                    faturado: { text: 'Faturado', badge: 'badge-success' }
+                    faturado: { text: 'Faturado', badge: 'badge-success' },
+                    faturando: { text: 'Faturando', badge: 'badge-primary' }
                 };
 
                 const type = typeLabels[doc.type] || { text: doc.type, badge: 'badge-secondary' };
@@ -133,8 +134,8 @@ export const documentos = {
                 const docs = await db.getDocuments();
                 const doc = docs.find(d => d.id === id);
                 if (doc) {
-                    doc.status = 'cancelado';
-                    await db.saveDocument(doc);
+                    await db.updateDocumentStatus(doc.id, 'cancelado');
+                    doc.status = 'cancelado'; // Update locally
                     await this.render();
                 }
             } catch (e) {

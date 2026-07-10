@@ -390,6 +390,13 @@ export const pdv = {
     },
 
     clearPDV() {
+        if (this.linkedOrcamentoId) {
+            // Se houver um orçamento/condicional vinculado, reverte o status para aberto
+            db.updateDocumentStatus(this.linkedOrcamentoId, 'aberto').then(() => {
+                if (app.documentos) app.documentos.render();
+            }).catch(console.error);
+        }
+
         this.cart = [];
         this.discount = 0.00;
         this.addition = 0.00;
@@ -806,9 +813,11 @@ export const pdv = {
                 client_name: client ? client.name : 'Consumidor Geral',
                 cart: [...this.cart],
                 discount: this.discount,
-                addition: this.addition
+                addition: this.addition,
+                linkedOrcamentoId: this.linkedOrcamentoId
             });
 
+            // Isto vai limpar o PDV e reverter temporariamente o documento original para 'aberto'
             this.clearPDV();
             this.updateSuspensionUI();
             app.triggerBeep();
@@ -827,6 +836,12 @@ export const pdv = {
             this.selectedClientId = restored.client_id;
             this.discount = restored.discount;
             this.addition = restored.addition;
+            
+            // Retoma também o vínculo ao documento original e marca ele como 'faturando' de novo se aplicável
+            this.linkedOrcamentoId = restored.linkedOrcamentoId;
+            if (this.linkedOrcamentoId) {
+                db.updateDocumentStatus(this.linkedOrcamentoId, 'faturando').catch(console.error);
+            }
 
             document.getElementById('pdv-discount').value = this.discount.toFixed(2);
             document.getElementById('pdv-addition').value = this.addition.toFixed(2);
