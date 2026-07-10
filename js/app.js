@@ -15,6 +15,7 @@ export const app = {
         return new Promise(resolve => {
             document.getElementById('custom-dialog-title').innerHTML = title;
             document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
+            document.getElementById('custom-dialog-input').style.display = 'none';
             
             const footer = document.getElementById('custom-dialog-footer');
             footer.innerHTML = `<button class="btn btn-primary" id="btn-custom-dialog-ok">OK</button>`;
@@ -37,6 +38,7 @@ export const app = {
         return new Promise(resolve => {
             document.getElementById('custom-dialog-title').innerHTML = title;
             document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
+            document.getElementById('custom-dialog-input').style.display = 'none';
             
             const footer = document.getElementById('custom-dialog-footer');
             footer.innerHTML = `
@@ -55,6 +57,43 @@ export const app = {
             document.getElementById('btn-custom-dialog-confirm').addEventListener('click', () => close(true));
             
             overlay.classList.add('active');
+        });
+    },
+
+    showPrompt(message, title = 'Entrada de Dados') {
+        return new Promise(resolve => {
+            document.getElementById('custom-dialog-title').innerHTML = title;
+            document.getElementById('custom-dialog-message').innerHTML = String(message).replace(/\n/g, '<br>');
+            
+            const inputField = document.getElementById('custom-dialog-input');
+            inputField.style.display = 'block';
+            inputField.value = '';
+            
+            const footer = document.getElementById('custom-dialog-footer');
+            footer.innerHTML = `
+                <button class="btn btn-secondary" id="btn-custom-dialog-cancel">Cancelar</button>
+                <button class="btn btn-primary" id="btn-custom-dialog-confirm">OK</button>
+            `;
+            
+            const overlay = document.getElementById('modal-custom-dialog');
+            
+            const close = (result) => {
+                overlay.classList.remove('active');
+                inputField.style.display = 'none';
+                resolve(result);
+            };
+            
+            document.getElementById('btn-custom-dialog-cancel').addEventListener('click', () => close(null));
+            document.getElementById('btn-custom-dialog-confirm').addEventListener('click', () => close(inputField.value));
+            
+            inputField.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    close(inputField.value);
+                }
+            });
+            
+            overlay.classList.add('active');
+            setTimeout(() => inputField.focus(), 100);
         });
     },
 

@@ -233,7 +233,7 @@ export const pdv = {
     },
 
     async searchProductByName() {
-        const query = prompt('Digite o nome ou parte do nome do produto:');
+        const query = await app.showPrompt('Digite o nome ou parte do nome do produto:', 'Busca de Produto');
         if (!query) return;
 
         try {
@@ -248,12 +248,15 @@ export const pdv = {
                 await this.scanBarcode(matches[0].barcode);
             } else {
                 // Mais de um correspondente, deixa escolher
-                let promptText = 'Vários produtos encontrados, digite o número correspondente:\n';
+                let promptText = 'Vários produtos encontrados, digite o número correspondente:\n\n';
                 matches.forEach((p, idx) => {
                     promptText += `${idx + 1} - ${p.name} (Estoque: ${p.stock} | ${app.formatCurrency(p.price)})\n`;
                 });
-                const choice = parseInt(prompt(promptText)) - 1;
-                if (choice >= 0 && choice < matches.length) {
+                const choiceStr = await app.showPrompt(promptText, 'Selecione o Produto');
+                if (!choiceStr) return;
+                
+                const choice = parseInt(choiceStr) - 1;
+                if (!isNaN(choice) && choice >= 0 && choice < matches.length) {
                     await this.scanBarcode(matches[choice].barcode);
                 }
             }
