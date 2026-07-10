@@ -193,7 +193,6 @@ export const financeiro = {
         });
 
         if (context === 'trans') {
-            selectType.disabled = false;
             Array.from(selectType.options).forEach(opt => {
                 if (opt.value === 'pagar' || opt.value === 'receber') {
                     opt.disabled = true;
@@ -204,15 +203,25 @@ export const financeiro = {
             this.adjustFormFields('receita');
             document.getElementById('modal-financeiro-title').textContent = 'Novo Lançamento no Caixa';
         } else if (context === 'payable') {
+            Array.from(selectType.options).forEach(opt => {
+                if (opt.value === 'receber' || opt.value === 'receita') {
+                    opt.disabled = true;
+                    opt.hidden = true;
+                }
+            });
             selectType.value = 'pagar';
-            selectType.disabled = true;
             this.adjustFormFields('pagar');
-            document.getElementById('modal-financeiro-title').textContent = 'Nova Conta a Pagar';
+            document.getElementById('modal-financeiro-title').textContent = 'Nova Conta a Pagar / Despesa';
         } else if (context === 'receivable') {
+            Array.from(selectType.options).forEach(opt => {
+                if (opt.value === 'pagar' || opt.value === 'despesa') {
+                    opt.disabled = true;
+                    opt.hidden = true;
+                }
+            });
             selectType.value = 'receber';
-            selectType.disabled = true;
             this.adjustFormFields('receber');
-            document.getElementById('modal-financeiro-title').textContent = 'Nova Conta a Receber (Crediário)';
+            document.getElementById('modal-financeiro-title').textContent = 'Nova Conta a Receber / Receita';
         }
 
         app.openModal('modal-financeiro');

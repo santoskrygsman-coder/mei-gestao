@@ -430,7 +430,7 @@ app.post('/api/documents', authenticateToken, async (req, res) => {
                 // Cria conta a receber
                 await db.saveAccount(req.user.company_id, {
                     type: 'receber',
-                    desc: `Venda a prazo: ${saved.id}`,
+                    desc: `Venda a prazo: ${saved.id}${sale.client_name ? ` (${sale.client_name})` : ''}`,
                     client_id: sale.client_id,
                     amount: sale.remaining,
                     dueDate: sale.due_date,
