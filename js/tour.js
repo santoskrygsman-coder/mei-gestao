@@ -12,12 +12,12 @@ export const tour = {
         if (!hasSeenTour) {
             // Pequeno delay para garantir que a tela carregou e as métricas estão visíveis
             setTimeout(() => {
-                this.startTour();
+                this.startGeneralTour();
             }, 1500);
         }
     },
 
-    startTour() {
+    startGeneralTour() {
         if (!window.introJs) {
             console.error('Intro.js não carregado!');
             return;
@@ -88,6 +88,79 @@ export const tour = {
 
         intro.onexit(() => {
             localStorage.setItem('hasSeenTour_v1', 'true');
+        });
+
+        intro.start();
+    },
+
+    startProductTour() {
+        if (!window.introJs) return;
+
+        // Força a tela de estoque
+        if (app.currentView !== 'estoque') {
+            app.switchView('estoque');
+        }
+
+        const intro = introJs();
+        
+        intro.setOptions({
+            nextLabel: 'Próximo',
+            prevLabel: 'Anterior',
+            doneLabel: 'Entendi!',
+            skipLabel: 'Pular',
+            showStepNumbers: true,
+            exitOnOverlayClick: false,
+            keyboardNavigation: true,
+            steps: [
+                {
+                    title: '📦 Cadastro de Produto',
+                    intro: 'Vamos aprender como cadastrar um produto novo no seu estoque de forma rápida!'
+                },
+                {
+                    element: document.querySelector('#btn-new-product'),
+                    title: 'Novo Produto',
+                    intro: 'Sempre que precisar cadastrar um produto manualmente, clique neste botão.',
+                    position: 'bottom'
+                },
+                {
+                    element: document.querySelector('#modal-product-content'),
+                    title: 'Preenchendo os Dados',
+                    intro: 'Aqui você informa os detalhes do produto. Vamos ver os campos principais.',
+                    position: 'top'
+                },
+                {
+                    element: document.querySelector('#prod-barcode').parentElement,
+                    title: 'Código de Barras',
+                    intro: 'Opcional, mas muito recomendado! Você pode digitar ou bipar com o leitor. Isso agiliza muito a venda no PDV.',
+                    position: 'right'
+                },
+                {
+                    element: document.querySelector('#prod-price').parentElement,
+                    title: 'Preço de Venda',
+                    intro: 'O valor final que será cobrado do cliente. Se você preencher o Preço de Custo, o sistema vai te mostrar a Margem de Lucro logo abaixo.',
+                    position: 'left'
+                },
+                {
+                    element: document.querySelector('#modal-product .btn-primary'),
+                    title: 'Salvar',
+                    intro: 'Após preencher o Nome e o Preço, clique em Salvar e o produto já estará pronto para venda no Caixa!',
+                    position: 'left'
+                }
+            ]
+        });
+
+        // Intercepta a mudança de passos para abrir o modal automaticamente
+        intro.onbeforechange(function(targetElement) {
+            // O passo 3 (índice 2) é onde apontamos para o modal-product-content
+            // Se o elemento alvo estiver dentro do modal, abrimos ele primeiro
+            if (targetElement && (targetElement.id === 'modal-product-content' || targetElement.closest('.modal-container'))) {
+                app.openModal('modal-product');
+                // Retorna uma Promise para o Intro.js esperar a animação do modal
+                return new Promise(resolve => setTimeout(resolve, 300));
+            } else {
+                // Se estamos voltando do modal para a tela principal, fechamos o modal
+                app.closeModal('modal-product');
+            }
         });
 
         intro.start();

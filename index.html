@@ -15,42 +15,67 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css">
     <style>
         .introjs-tooltip {
-            background-color: var(--card-bg);
-            color: var(--text);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--card-bg) !important;
+            color: var(--text) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            min-width: 300px;
         }
-        .introjs-arrow.top { border-bottom-color: var(--card-bg); }
-        .introjs-arrow.bottom { border-top-color: var(--card-bg); }
-        .introjs-arrow.left { border-right-color: var(--card-bg); }
-        .introjs-arrow.right { border-left-color: var(--card-bg); }
+        .introjs-tooltip-title {
+            color: var(--primary) !important;
+            font-size: 1.2rem !important;
+            font-weight: 700 !important;
+            margin-bottom: 0.5rem !important;
+        }
+        .introjs-tooltiptext {
+            font-size: 0.95rem !important;
+            line-height: 1.5 !important;
+            color: var(--text-muted) !important;
+        }
+        .introjs-skipbutton {
+            color: var(--text-muted) !important;
+            font-size: 0.85rem !important;
+            padding: 5px !important;
+        }
+        .introjs-skipbutton:hover {
+            color: var(--danger) !important;
+        }
+        .introjs-arrow.top { border-bottom-color: var(--card-bg) !important; }
+        .introjs-arrow.bottom { border-top-color: var(--card-bg) !important; }
+        .introjs-arrow.left { border-right-color: var(--card-bg) !important; }
+        .introjs-arrow.right { border-left-color: var(--card-bg) !important; }
+        
         .introjs-tooltipbuttons a {
-            background-color: var(--surface);
-            color: var(--text);
-            text-shadow: none;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.1);
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+            text-shadow: none !important;
+            border-radius: 6px !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            padding: 8px 12px !important;
+            font-weight: 600 !important;
         }
-        .introjs-tooltipbuttons a.introjs-nextbutton {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
+        .introjs-tooltipbuttons a.introjs-nextbutton, .introjs-tooltipbuttons a.introjs-donebutton {
+            background-color: var(--primary) !important;
+            color: white !important;
+            border-color: var(--primary) !important;
         }
-        .introjs-tooltipbuttons a.introjs-nextbutton:hover {
-            background-color: var(--primary-hover);
+        .introjs-tooltipbuttons a.introjs-nextbutton:hover, .introjs-tooltipbuttons a.introjs-donebutton:hover {
+            background-color: var(--primary-hover) !important;
         }
         .introjs-bullets ul li a {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.2) !important;
+            box-shadow: none !important;
         }
         .introjs-bullets ul li a.active {
-            background: var(--primary);
+            background: var(--primary) !important;
         }
         .introjs-helperLayer {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--primary);
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 2px solid var(--primary) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 2px 15px rgba(14, 165, 233, 0.3) !important;
         }
     </style>
 </head>
@@ -97,9 +122,9 @@
                     <i class="fa-solid fa-gear"></i>
                     <span>Configurações</span>
                 </a>
-                <a class="nav-item" onclick="app.tour.startTour()" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; cursor: pointer; color: var(--primary);">
+                <a class="nav-item" onclick="app.openModal('modal-tours')" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; cursor: pointer; color: var(--primary);">
                     <i class="fa-solid fa-circle-play"></i>
-                    <span>Tour Guiado</span>
+                    <span>Tours & Tutoriais</span>
                 </a>
             </nav>
             <div class="user-info">
@@ -1767,6 +1792,33 @@
             </div>
             <div class="modal-footer" id="custom-dialog-footer" style="display: flex; gap: 1rem; justify-content: flex-end;">
                 <!-- Botões dinâmicos entram aqui -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Escolha de Tours -->
+    <div id="modal-tours" class="modal-overlay">
+        <div class="modal-container glass-card" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-circle-play text-primary"></i> Central de Ajuda & Tutoriais</h3>
+                <button class="btn btn-icon" onclick="app.closeModal('modal-tours')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">Escolha um tour interativo abaixo para aprender na prática como usar o sistema.</p>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <button class="btn btn-outline" style="justify-content: flex-start; text-align: left; padding: 1rem; height: auto;" onclick="app.closeModal('modal-tours'); app.tour.startGeneralTour()">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.1rem; color: var(--primary);"><i class="fa-solid fa-compass"></i> Tour Geral (Visão Básica)</div>
+                            <div class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">Uma volta rápida por todas as telas do sistema e o que cada uma faz.</div>
+                        </div>
+                    </button>
+                    <button class="btn btn-outline" style="justify-content: flex-start; text-align: left; padding: 1rem; height: auto;" onclick="app.closeModal('modal-tours'); app.tour.startProductTour()">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.1rem; color: var(--success);"><i class="fa-solid fa-box-open"></i> Como Cadastrar um Produto</div>
+                            <div class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">Aprenda a inserir um produto no estoque com preço, código e categoria.</div>
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
