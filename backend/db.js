@@ -550,26 +550,29 @@ module.exports = {
         const { type, client_id, client_name, date, discount, addition, total, creditUsed, remaining, status, paymentMethod, due_date } = doc;
         const finalDate = date || new Date().toISOString().split('T')[0];
         
-        await pool.query('BEGIN');
+        const client = await pool.connect();
         try {
-            await pool.query(`
+            await client.query('BEGIN');
+            await client.query(`
                 INSERT INTO documents (id, company_id, type, client_id, client_name, date, discount, addition, total, credit_used, remaining, status, payment_method, due_date)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             `, [docId, companyId, type, client_id, client_name, finalDate, discount || 0, addition || 0, total, creditUsed || 0, remaining || total, status || 'finalizado', paymentMethod, due_date || null]);
 
             if (doc.items && doc.items.length) {
                 for (let item of doc.items) {
-                    await pool.query(`
+                    await client.query(`
                         INSERT INTO document_items (document_id, company_id, product_id, name, price, qty)
                         VALUES ($1, $2, $3, $4, $5, $6)
                     `, [docId, companyId, item.id, item.name, item.price, item.qty]);
                 }
             }
-            await pool.query('COMMIT');
+            await client.query('COMMIT');
             return { ...doc, id: docId, date: finalDate };
         } catch (e) {
-            await pool.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw e;
+        } finally {
+            client.release();
         }
     },
 
