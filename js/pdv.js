@@ -236,6 +236,32 @@ export const pdv = {
         try {
             const products = await db.getProducts();
             
+            let modal = document.getElementById('modal-product-search');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'modal-product-search';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-container glass-card" style="max-width: 600px; padding: 0;">
+                        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem;">
+                            <h3 style="display: flex; align-items: center; gap: 0.75rem; margin: 0;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(14, 165, 233, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </div>
+                                Busca de Produto
+                            </h3>
+                            <button class="modal-close" onclick="app.closeModal('modal-product-search')">&times;</button>
+                        </div>
+                        <div class="modal-body" style="padding: 1.5rem;">
+                            <input type="text" id="pdv-search-input" class="form-control form-control-lg mb-3" placeholder="Digite o nome do produto..." autocomplete="off">
+                            <div id="pdv-search-results" style="max-height: 40vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            
             app.openModal('modal-product-search');
             const input = document.getElementById('pdv-search-input');
             const resultsDiv = document.getElementById('pdv-search-results');
