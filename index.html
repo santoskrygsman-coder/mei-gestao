@@ -516,11 +516,19 @@
                         <div class="flex-gap" style="align-items: center; flex-wrap: wrap;">
                             <div class="flex-gap" style="align-items: center;">
                                 <label for="report-filter-start" style="font-size: 0.85rem; margin-bottom: 0; color: var(--text-muted);">De:</label>
-                                <input type="date" class="form-control" id="report-filter-start" style="width: 140px; padding: 0.35rem; font-size: 0.85rem;">
+                                <input type="date" class="form-control" id="report-filter-start" style="width: 130px; padding: 0.35rem; font-size: 0.85rem;">
                             </div>
                             <div class="flex-gap" style="align-items: center;">
                                 <label for="report-filter-end" style="font-size: 0.85rem; margin-bottom: 0; color: var(--text-muted);">Até:</label>
-                                <input type="date" class="form-control" id="report-filter-end" style="width: 140px; padding: 0.35rem; font-size: 0.85rem;">
+                                <input type="date" class="form-control" id="report-filter-end" style="width: 130px; padding: 0.35rem; font-size: 0.85rem;">
+                            </div>
+                            <div class="flex-gap" style="align-items: center; margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem;">
+                                <label for="report-type-selector" style="font-size: 0.85rem; margin-bottom: 0; color: var(--text-muted);">Relatório:</label>
+                                <select id="report-type-selector" class="form-control" style="width: 180px; padding: 0.35rem; font-size: 0.85rem;" onchange="app.relatorios.switchReport(this.value)">
+                                    <option value="dre">DRE Simplificado</option>
+                                    <option value="abc">Curva ABC de Vendas</option>
+                                    <option value="crediario">Cobrança / Crediário</option>
+                                </select>
                             </div>
                             <button class="btn btn-primary" id="btn-report-filter" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
                                 <i class="fa-solid fa-filter"></i> Filtrar
@@ -539,7 +547,7 @@
                 </div>
 
                 <!-- DRE Simplificado -->
-                <div class="glass-card" style="margin-bottom: 1.5rem;">
+                <div class="glass-card report-section" id="report-container-dre" style="margin-bottom: 1.5rem;">
                     <div class="flex-between mb-2">
                         <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-calculator"></i> DRE Simplificado - Demonstrativo do Resultado</h3>
                         <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportDreToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar DRE para Excel">
@@ -563,57 +571,55 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem;">
-                    <!-- Curva ABC de Vendas -->
-                    <div class="glass-card">
-                        <div class="flex-between mb-2">
-                            <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-ranking-star"></i> Ranking / Curva ABC de Vendas (Giro de Produtos)</h3>
-                            <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportAbcToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar Ranking para Excel">
-                                <i class="fa-solid fa-file-excel"></i> Exportar Excel
-                            </button>
-                        </div>
-                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Produtos ordenados pela receita gerada. Mostra a margem e lucro bruto real por item.</p>
-                        <div class="table-responsive">
-                            <table class="custom-table" style="font-size: 0.85rem;">
-                                <thead>
-                                    <tr>
-                                        <th>Produto</th>
-                                        <th style="width: 80px;">Qtd. Vendida</th>
-                                        <th style="text-align: right; width: 120px;">Receita Total</th>
-                                        <th style="text-align: right; width: 110px;">Custo (CMV)</th>
-                                        <th style="text-align: right; width: 110px;">Lucro Bruto</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="report-abc-body">
-                                    <!-- Injetado via JS -->
-                                </tbody>
-                            </table>
-                        </div>
+                <!-- Curva ABC de Vendas -->
+                <div class="glass-card report-section" id="report-container-abc" style="margin-bottom: 1.5rem; display: none;">
+                    <div class="flex-between mb-2">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-ranking-star"></i> Ranking / Curva ABC de Vendas (Giro de Produtos)</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportAbcToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar Ranking para Excel">
+                            <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                        </button>
                     </div>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Produtos ordenados pela receita gerada. Mostra a margem e lucro bruto real por item.</p>
+                    <div class="table-responsive">
+                        <table class="custom-table" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th style="width: 80px;">Qtd. Vendida</th>
+                                    <th style="text-align: right; width: 120px;">Receita Total</th>
+                                    <th style="text-align: right; width: 110px;">Custo (CMV)</th>
+                                    <th style="text-align: right; width: 110px;">Lucro Bruto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-abc-body">
+                                <!-- Injetado via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                    <!-- Crediário Ativo / Devedores -->
-                    <div class="glass-card">
-                        <div class="flex-between mb-2">
-                            <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-comments-dollar"></i> Cobrança / Crediário Ativo</h3>
-                            <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportDevedoresToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar Devedores para Excel">
-                                <i class="fa-solid fa-file-excel"></i> Exportar Excel
-                            </button>
-                        </div>
-                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Clientes com contas em aberto (débito pendente). Gere links de cobrança direta.</p>
-                        <div class="table-responsive">
-                            <table class="custom-table" style="font-size: 0.85rem;">
-                                <thead>
-                                    <tr>
-                                        <th>Cliente</th>
-                                        <th style="text-align: right; width: 120px;">Saldo Devedor</th>
-                                        <th style="width: 90px;">Ação</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="report-devedores-body">
-                                    <!-- Injetado via JS -->
-                                </tbody>
-                            </table>
-                        </div>
+                <!-- Crediário Ativo / Devedores -->
+                <div class="glass-card report-section" id="report-container-crediario" style="margin-bottom: 1.5rem; display: none;">
+                    <div class="flex-between mb-2">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0;"><i class="fa-solid fa-comments-dollar"></i> Cobrança / Crediário Ativo</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="app.relatorios.exportDevedoresToExcel()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Exportar Devedores para Excel">
+                            <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                        </button>
+                    </div>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Clientes com contas em aberto (débito pendente). Gere links de cobrança direta.</p>
+                    <div class="table-responsive">
+                        <table class="custom-table" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th style="text-align: right; width: 120px;">Saldo Devedor</th>
+                                    <th style="width: 90px;">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-devedores-body">
+                                <!-- Injetado via JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

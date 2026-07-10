@@ -44,6 +44,18 @@ export const relatorios = {
         }
     },
 
+    switchReport(reportType) {
+        // Oculta todas as seções
+        document.querySelectorAll('.report-section').forEach(el => {
+            el.style.display = 'none';
+        });
+        // Exibe apenas a selecionada
+        const target = document.getElementById('report-container-' + reportType);
+        if (target) {
+            target.style.display = 'block';
+        }
+    },
+
     setDefaultDates() {
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -79,6 +91,11 @@ export const relatorios = {
             this.renderDre();
             this.renderAbcReport();
             this.renderDevedoresReport();
+            
+            const selector = document.getElementById('report-type-selector');
+            if (selector) {
+                this.switchReport(selector.value);
+            }
         } catch (e) {
             console.error('Erro ao carregar dados dos relatórios:', e);
         }
