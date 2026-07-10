@@ -402,6 +402,12 @@
                     <h2>Gerenciamento de Documentos</h2>
                     <p class="text-muted mb-2">Orçamentos salvos, Pedidos e saídas de mercadorias no formato Condicional.</p>
                     
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem; align-items: center;">
+                        <div class="input-group" style="flex: 1; max-width: 400px;">
+                            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" id="doc-search-input" class="form-control" placeholder="Buscar por ID da nota ou nome do cliente..." onkeyup="app.documentos.render()">
+                        </div>
+                    </div>
                     <div class="table-responsive mt-3">
                         <table class="custom-table" id="table-documents">
                             <thead>

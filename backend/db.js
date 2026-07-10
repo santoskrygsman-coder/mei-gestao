@@ -573,6 +573,20 @@ module.exports = {
         }
     },
 
+    async updateDocumentStatus(companyId, docId, status) {
+        if (useMock) {
+            const doc = mockDb.documents.find(d => d.id === docId && d.company_id === Number(companyId));
+            if (doc) {
+                doc.status = status;
+                saveMock();
+                return true;
+            }
+            return false;
+        }
+        const res = await pool.query('UPDATE documents SET status = $1 WHERE id = $2 AND company_id = $3', [status, docId, companyId]);
+        return res.rowCount > 0;
+    },
+
     async cancelDocument(companyId, docId) {
         if (useMock) {
             const doc = mockDb.documents.find(d => d.id === docId && d.company_id === Number(companyId));

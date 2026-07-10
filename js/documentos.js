@@ -14,20 +14,36 @@ export const documentos = {
                 await this.processCondicionalClosure();
             });
         }
+        
+        const searchInput = document.getElementById('doc-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => this.render());
+        }
     },
 
     async render() {
         try {
             const docs = await db.getDocuments();
             const tbody = document.getElementById('list-documents-body');
+            const searchInput = document.getElementById('doc-search-input');
+            const filterText = searchInput ? searchInput.value.toLowerCase() : '';
+
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            if (docs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align: center;">Nenhum documento registrado.</td></tr>';
+            const filteredDocs = docs.filter(doc => {
+                if (!filterText) return true;
+                const idMatch = doc.id && doc.id.toLowerCase().includes(filterText);
+                const nameMatch = doc.client_name && doc.client_name.toLowerCase().includes(filterText);
+                return idMatch || nameMatch;
+            });
+
+            if (filteredDocs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum documento encontrado.</td></tr>';
                 return;
             }
 
-            docs.forEach(doc => {
+            filteredDocs.forEach(doc => {
                 const tr = document.createElement('tr');
                 
                 // Formatadores de Tipo e Status
@@ -133,8 +149,8 @@ export const documentos = {
             const doc = docs.find(d => d.id === id);
             if (doc) {
                 // Marca orçamento como faturado
-                doc.status = 'faturado';
-                await db.saveDocument(doc);
+                await db.updateDocumentStatus(doc.id, 'faturado');
+                doc.status = 'faturado'; // Update locally just in case
 
                 // Carrega itens no PDV
                 app.pdv.clearPDV();

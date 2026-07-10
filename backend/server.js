@@ -456,6 +456,22 @@ app.post('/api/documents', authenticateToken, async (req, res) => {
     }
 });
 
+// Atualização de status de documento (ex: orcamento -> faturado)
+app.put('/api/documents/:id/status', authenticateToken, async (req, res) => {
+    const docId = req.params.id;
+    const { status } = req.body;
+    try {
+        const success = await db.updateDocumentStatus(req.user.company_id, docId, status);
+        if (success) {
+            res.json({ success: true });
+        } else {
+            res.status(404).json({ error: 'Documento não encontrado.' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao atualizar status do documento.' });
+    }
+});
+
 // Cancelamento de venda
 app.post('/api/documents/:id/cancel', authenticateToken, requireAdmin, async (req, res) => {
     const docId = req.params.id;

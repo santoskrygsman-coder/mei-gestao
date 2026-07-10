@@ -195,13 +195,16 @@ export const db = {
         return await this.request('DELETE', `/api/clients/${id}`);
     },
 
-    // --- DOCUMENTOS ---
     async getDocuments() {
         return await this.request('GET', '/api/documents');
     },
 
     async saveDocument(doc) {
         return await this.request('POST', '/api/documents', doc);
+    },
+
+    async updateDocumentStatus(id, status) {
+        return await this.request('PUT', `/api/documents/${id}/status`, { status });
     },
 
     async cancelDocument(id) {
