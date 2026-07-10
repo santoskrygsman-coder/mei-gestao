@@ -1658,6 +1658,27 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
+    <!-- Modal Busca de Produtos (Autocompletar) -->
+    <div id="modal-product-search" class="modal-overlay">
+        <div class="modal-container glass-card" style="max-width: 600px; padding: 0;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.75rem; margin: 0;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(14, 165, 233, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    Busca de Produto
+                </h3>
+                <button class="modal-close" onclick="app.closeModal('modal-product-search')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <input type="text" id="pdv-search-input" class="form-control form-control-lg mb-3" placeholder="Digite o nome do produto..." autocomplete="off">
+                <div id="pdv-search-results" style="max-height: 40vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <!-- Resultados injetados via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Modal Central de Notificações -->
     <div id="modal-notifications" class="modal-overlay">
         <div class="modal-container glass-card" style="max-width: 500px; padding: 0;">

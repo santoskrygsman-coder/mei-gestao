@@ -233,35 +233,57 @@ export const pdv = {
     },
 
     async searchProductByName() {
-        const query = await app.showPrompt('Digite o nome ou parte do nome do produto:', 'Busca de Produto');
-        if (!query) return;
-
         try {
             const products = await db.getProducts();
-            const matches = products.filter(p => 
-                p.name.toLowerCase().includes(query.toLowerCase())
-            );
-
-            if (matches.length === 0) {
-                await app.showAlert('Nenhum produto encontrado com este nome.');
-            } else if (matches.length === 1) {
-                await this.scanBarcode(matches[0].barcode);
-            } else {
-                // Mais de um correspondente, deixa escolher
-                let promptText = 'Vários produtos encontrados, digite o número correspondente:\n\n';
-                matches.forEach((p, idx) => {
-                    promptText += `${idx + 1} - ${p.name} (Estoque: ${p.stock} | ${app.formatCurrency(p.price)})\n`;
-                });
-                const choiceStr = await app.showPrompt(promptText, 'Selecione o Produto');
-                if (!choiceStr) return;
-                
-                const choice = parseInt(choiceStr) - 1;
-                if (!isNaN(choice) && choice >= 0 && choice < matches.length) {
-                    await this.scanBarcode(matches[choice].barcode);
+            
+            app.openModal('modal-product-search');
+            const input = document.getElementById('pdv-search-input');
+            const resultsDiv = document.getElementById('pdv-search-results');
+            
+            input.value = '';
+            resultsDiv.innerHTML = '<div class="text-muted text-center" style="padding: 1rem;">Digite para buscar...</div>';
+            
+            const renderResults = (query) => {
+                if (!query) {
+                    resultsDiv.innerHTML = '<div class="text-muted text-center" style="padding: 1rem;">Digite para buscar...</div>';
+                    return;
                 }
-            }
+                
+                const matches = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+                
+                if (matches.length === 0) {
+                    resultsDiv.innerHTML = '<div class="text-muted text-center" style="padding: 1rem;">Nenhum produto encontrado.</div>';
+                    return;
+                }
+                
+                resultsDiv.innerHTML = matches.map(p => `
+                    <div class="glass-card" style="padding: 0.75rem 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.2s;" 
+                         onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(14, 165, 233, 0.1)'" 
+                         onmouseout="this.style.borderColor='transparent'; this.style.background='var(--glass-bg)'"
+                         onclick="app.closeModal('modal-product-search'); app.pdv.scanBarcode('${p.barcode}')">
+                        <div>
+                            <div style="font-weight: 600;">${p.name}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Estoque: ${p.stock}</div>
+                        </div>
+                        <div style="font-weight: bold; color: var(--primary);">
+                            ${app.formatCurrency(p.price)}
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            // Remove antigos listeners para evitar vazamento de memória se o modal for aberto várias vezes
+            const newBase = input.cloneNode(true);
+            input.parentNode.replaceChild(newBase, input);
+            
+            newBase.addEventListener('input', (e) => {
+                renderResults(e.target.value);
+            });
+            
+            setTimeout(() => newBase.focus(), 100);
         } catch (e) {
             console.error('Erro ao buscar produto por nome:', e);
+            app.showAlert('Erro ao abrir busca de produtos.');
         }
     },
 
