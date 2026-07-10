@@ -7,10 +7,15 @@ export const tour = {
         // Expose to global app object
         app.tour = this;
 
-        // Verifica se é o primeiro acesso
+        const loggedUser = sessionStorage.getItem('loggedUser');
+        if (loggedUser) {
+            this.checkAndStartGeneralTour();
+        }
+    },
+
+    checkAndStartGeneralTour() {
         const hasSeenTour = localStorage.getItem('hasSeenTour_v1');
         if (!hasSeenTour) {
-            // Pequeno delay para garantir que a tela carregou e as métricas estão visíveis
             setTimeout(() => {
                 this.startGeneralTour();
             }, 1500);

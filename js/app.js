@@ -795,6 +795,7 @@ export const app = {
                 this.checkLoginStatus();
                 await this.switchView('dashboard');
                 this.checkUpdateNotes();
+                if (app.tour) app.tour.checkAndStartGeneralTour();
             } else {
                 if (errorMsg) errorMsg.style.display = 'block';
             }
@@ -831,6 +832,7 @@ export const app = {
                     
                     this.checkLoginStatus();
                     await this.switchView('dashboard');
+                    if (app.tour) app.tour.checkAndStartGeneralTour();
                 }
             }
         } catch (err) {
