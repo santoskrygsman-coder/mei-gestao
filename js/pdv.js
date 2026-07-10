@@ -60,9 +60,11 @@ export const pdv = {
                     this.handleBarcodeSubmit();
                 }
             });
-            // Tenta manter o foco no campo de código de barras ao clicar no container do caixa
-            document.querySelector('.pdv-cart').addEventListener('click', () => {
-                barcodeInput.focus();
+            // Tenta manter o foco no campo de código de barras ao clicar no container do caixa, a menos que esteja clicando em outro input (como a quantidade)
+            document.querySelector('.pdv-cart').addEventListener('click', (e) => {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                    barcodeInput.focus();
+                }
             });
         }
 
