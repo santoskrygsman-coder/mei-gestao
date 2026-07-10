@@ -117,31 +117,31 @@ export const tour = {
                     intro: 'Vamos aprender como cadastrar um produto novo no seu estoque de forma rápida!'
                 },
                 {
-                    element: document.querySelector('#btn-new-product'),
+                    element: '#btn-new-product',
                     title: 'Novo Produto',
                     intro: 'Sempre que precisar cadastrar um produto manualmente, clique neste botão.',
                     position: 'bottom'
                 },
                 {
-                    element: document.querySelector('#modal-product-content'),
+                    element: '#modal-product .modal-container',
                     title: 'Preenchendo os Dados',
                     intro: 'Aqui você informa os detalhes do produto. Vamos ver os campos principais.',
                     position: 'top'
                 },
                 {
-                    element: document.querySelector('#prod-barcode').parentElement,
+                    element: '#prod-barcode',
                     title: 'Código de Barras',
                     intro: 'Opcional, mas muito recomendado! Você pode digitar ou bipar com o leitor. Isso agiliza muito a venda no PDV.',
                     position: 'right'
                 },
                 {
-                    element: document.querySelector('#prod-price').parentElement,
+                    element: '#prod-price',
                     title: 'Preço de Venda',
                     intro: 'O valor final que será cobrado do cliente. Se você preencher o Preço de Custo, o sistema vai te mostrar a Margem de Lucro logo abaixo.',
                     position: 'left'
                 },
                 {
-                    element: document.querySelector('#modal-product .btn-primary'),
+                    element: '#modal-product .btn-primary',
                     title: 'Salvar',
                     intro: 'Após preencher o Nome e o Preço, clique em Salvar e o produto já estará pronto para venda no Caixa!',
                     position: 'left'
@@ -150,7 +150,7 @@ export const tour = {
         });
 
         intro.onbeforechange(function(targetElement) {
-            if (targetElement && (targetElement.id === 'modal-product-content' || targetElement.closest('.modal-container'))) {
+            if (targetElement && targetElement.closest('#modal-product')) {
                 app.openModal('modal-product');
                 return new Promise(resolve => setTimeout(resolve, 300));
             } else {
@@ -169,19 +169,19 @@ export const tour = {
             nextLabel: 'Próximo', prevLabel: 'Anterior', doneLabel: 'Entendi!', skipLabel: 'Pular', showStepNumbers: true, exitOnOverlayClick: false, keyboardNavigation: true,
             steps: [
                 { title: '🛒 Frente de Caixa', intro: 'Vamos aprender a registrar uma venda e finalizar o pagamento.' },
-                { element: document.querySelector('.pdv-cart'), title: 'O Carrinho', intro: 'Aqui aparecerão os produtos que você buscar pelo nome ou bipar com o leitor.', position: 'right' },
-                { element: document.querySelector('#btn-payment'), title: 'Finalizar', intro: 'Após inserir os produtos, clique aqui para ir ao pagamento.', position: 'top' },
-                { element: document.querySelector('#modal-payment .modal-container'), title: 'Recebendo o Valor', intro: 'Nesta janela você escolhe como o cliente vai pagar.', position: 'top' },
-                { element: document.querySelector('#pay-method').parentElement, title: 'Forma de Pagamento', intro: 'Selecione Dinheiro, PIX, Cartão, ou Crediário.', position: 'right' },
-                { element: document.querySelector('#modal-payment .btn-success'), title: 'Confirmar', intro: 'Pronto! É só confirmar e a venda será registrada no sistema.', position: 'bottom' }
+                { element: '.pdv-cart', title: 'O Carrinho', intro: 'Aqui aparecerão os produtos que você buscar pelo nome ou bipar com o leitor.', position: 'right' },
+                { element: '#btn-payment', title: 'Finalizar', intro: 'Após inserir os produtos, clique aqui para ir ao pagamento.', position: 'top' },
+                { element: '#modal-checkout .modal-container', title: 'Recebendo o Valor', intro: 'Nesta janela você escolhe como o cliente vai pagar.', position: 'top' },
+                { element: '#checkout-payment-method', title: 'Forma de Pagamento', intro: 'Selecione Dinheiro, PIX, Cartão, ou Crediário.', position: 'right' },
+                { element: '#btn-confirm-checkout', title: 'Confirmar', intro: 'Pronto! É só confirmar e a venda será registrada no sistema.', position: 'bottom' }
             ]
         });
         intro.onbeforechange(function(targetElement) {
-            if (targetElement && targetElement.closest('#modal-payment')) {
-                app.openModal('modal-payment');
+            if (targetElement && targetElement.closest('#modal-checkout')) {
+                app.openModal('modal-checkout');
                 return new Promise(resolve => setTimeout(resolve, 300));
             } else {
-                app.closeModal('modal-payment');
+                app.closeModal('modal-checkout');
             }
         });
         intro.start();
@@ -195,10 +195,10 @@ export const tour = {
             nextLabel: 'Próximo', prevLabel: 'Anterior', doneLabel: 'Entendi!', skipLabel: 'Pular', showStepNumbers: true, exitOnOverlayClick: false, keyboardNavigation: true,
             steps: [
                 { title: '💸 Gestão Financeira', intro: 'Controle o que entra e sai do seu caixa, além de contas a prazo.' },
-                { element: document.querySelector('#table-payable').parentElement.parentElement, title: 'Contas a Pagar', intro: 'Aqui ficam suas despesas futuras, como boletos e fornecedores.', position: 'right' },
-                { element: document.querySelector('#filter-payable'), title: 'Busca Rápida', intro: 'Você pode pesquisar qualquer conta digitando o nome do fornecedor ou a descrição.', position: 'bottom' },
-                { element: document.querySelector('#btn-new-payable'), title: 'Nova Conta', intro: 'Clique aqui para adicionar uma nova despesa pendente.', position: 'left' },
-                { element: document.querySelector('#table-receivable').parentElement.parentElement, title: 'Contas a Receber (Crediário)', intro: 'Aqui ficam os valores que seus clientes devem (vendas a prazo/fiado).', position: 'top' }
+                { element: '#table-payable', title: 'Contas a Pagar', intro: 'Aqui ficam suas despesas futuras, como boletos e fornecedores.', position: 'right' },
+                { element: '#filter-payable', title: 'Busca Rápida', intro: 'Você pode pesquisar qualquer conta digitando o nome do fornecedor ou a descrição.', position: 'bottom' },
+                { element: '#btn-new-payable', title: 'Nova Conta', intro: 'Clique aqui para adicionar uma nova despesa pendente.', position: 'left' },
+                { element: '#table-receivable', title: 'Contas a Receber (Crediário)', intro: 'Aqui ficam os valores que seus clientes devem (vendas a prazo/fiado).', position: 'top' }
             ]
         });
         intro.start();
@@ -212,11 +212,11 @@ export const tour = {
             nextLabel: 'Próximo', prevLabel: 'Anterior', doneLabel: 'Entendi!', skipLabel: 'Pular', showStepNumbers: true, exitOnOverlayClick: false, keyboardNavigation: true,
             steps: [
                 { title: '👥 Clientes', intro: 'Aprenda a cadastrar os seus clientes no sistema.' },
-                { element: document.querySelector('#btn-new-client'), title: 'Novo Cliente', intro: 'Clique neste botão para abrir o cadastro.', position: 'bottom' },
-                { element: document.querySelector('#modal-client .modal-container'), title: 'Dados do Cliente', intro: 'Esta é a ficha do seu cliente.', position: 'top' },
-                { element: document.querySelector('#cli-name').parentElement, title: 'Nome', intro: 'Preencha o nome completo ou apelido.', position: 'right' },
-                { element: document.querySelector('#cli-whatsapp').parentElement, title: 'WhatsApp', intro: 'Importante! Coloque o WhatsApp com DDD para poder enviar recibos digitais para ele depois.', position: 'left' },
-                { element: document.querySelector('#modal-client .btn-primary'), title: 'Salvar', intro: 'Depois de preencher, é só clicar aqui.', position: 'top' }
+                { element: '#btn-new-client', title: 'Novo Cliente', intro: 'Clique neste botão para abrir o cadastro.', position: 'bottom' },
+                { element: '#modal-client .modal-container', title: 'Dados do Cliente', intro: 'Esta é a ficha do seu cliente.', position: 'top' },
+                { element: '#cli-name', title: 'Nome', intro: 'Preencha o nome completo ou apelido.', position: 'right' },
+                { element: '#cli-whatsapp', title: 'WhatsApp', intro: 'Importante! Coloque o WhatsApp com DDD para poder enviar recibos digitais para ele depois.', position: 'left' },
+                { element: '#modal-client .btn-primary', title: 'Salvar', intro: 'Depois de preencher, é só clicar aqui.', position: 'top' }
             ]
         });
         intro.onbeforechange(function(targetElement) {
