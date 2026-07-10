@@ -207,6 +207,10 @@ export const db = {
         return await this.request('PUT', `/api/documents/${id}/status`, { status });
     },
 
+    async updateDocument(id, docData) {
+        return await this.request('PUT', `/api/documents/${id}`, docData);
+    },
+
     async cancelDocument(id) {
         return await this.request('POST', `/api/documents/${id}/cancel`);
     },

@@ -393,12 +393,17 @@ export const pdv = {
         this.cart = [];
         this.discount = 0.00;
         this.addition = 0.00;
+        this.linkedOrcamentoId = null; // Limpa referência de orçamento/condicional
+        this.selectedClientId = 'c1';
         
         const discInput = document.getElementById('pdv-discount');
         const addInput = document.getElementById('pdv-addition');
         if (discInput) discInput.value = '0.00';
         if (addInput) addInput.value = '0.00';
         
+        const clientSelect = document.getElementById('pdv-client-select');
+        if (clientSelect) clientSelect.value = 'c1';
+
         this.renderCart();
     },
 
@@ -664,6 +669,12 @@ export const pdv = {
             }
 
             const saved = await db.saveDocument(doc);
+
+            // Se veio de um orçamento ou condicional, atualiza o status dele para 'faturado'
+            if (this.linkedOrcamentoId) {
+                await db.updateDocumentStatus(this.linkedOrcamentoId, 'faturado');
+                this.linkedOrcamentoId = null; // Limpa para a próxima venda
+            }
 
             app.closeModal('modal-checkout');
             this.clearPDV();

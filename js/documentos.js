@@ -148,11 +148,7 @@ export const documentos = {
             const docs = await db.getDocuments();
             const doc = docs.find(d => d.id === id);
             if (doc) {
-                // Marca orçamento como faturado
-                await db.updateDocumentStatus(doc.id, 'faturado');
-                doc.status = 'faturado'; // Update locally just in case
-
-                // Carrega itens no PDV
+                // Prepara o PDV
                 app.pdv.clearPDV();
                 app.pdv.selectedClientId = doc.client_id || 'c1';
                 
@@ -167,8 +163,9 @@ export const documentos = {
 
                 app.pdv.discount = doc.discount || 0;
                 app.pdv.addition = doc.addition || 0;
+                app.pdv.linkedOrcamentoId = doc.id; // Vincula ao PDV para fechar só no checkout
                 
-                // Vai para o PDV e já abre a tela de pagamento
+                // Vai para o PDV para conferência e pagamento
                 app.switchView('pdv');
                 app.pdv.openCheckout();
             }
@@ -268,9 +265,11 @@ export const documentos = {
 
             // Se o cliente devolveu tudo (totalBilled == 0)
             if (totalBilled === 0) {
-                this.activeCondicionalDoc.status = 'devolvido';
-                this.activeCondicionalDoc.total = 0;
-                await db.saveDocument(this.activeCondicionalDoc);
+                await db.updateDocument(this.activeCondicionalDoc.id, {
+                    items: [],
+                    total: 0,
+                    status: 'devolvido'
+                });
                 
                 app.closeModal('modal-condicional');
                 await this.render();
@@ -278,109 +277,36 @@ export const documentos = {
                 return;
             }
 
-            // Se houver itens vendidos, abre um checkout especial para faturar
+            // Atualiza o documento condicional com os itens que ficaram e muda status
+            await db.updateDocument(this.activeCondicionalDoc.id, {
+                items: sellItems,
+                total: finalTotal,
+                status: 'faturando' // Status temporário até fechar a venda
+            });
+
             app.closeModal('modal-condicional');
 
-            // Configura checkout especial no namespace
-            this.checkoutClosureData = {
-                docId: this.activeCondicionalDoc.id,
-                client_id: this.activeCondicionalDoc.client_id,
-                items: sellItems,
-                discount: this.activeCondicionalDoc.discount || 0,
-                addition: this.activeCondicionalDoc.addition || 0,
-                total: finalTotal
-            };
-
-            // Abre modal de checkout
-            document.getElementById('checkout-total-display').textContent = app.formatCurrency(finalTotal);
-            document.getElementById('checkout-cash-received').value = finalTotal.toFixed(2);
+            // Joga os itens para o PDV para conferência e faturamento
+            app.pdv.clearPDV();
+            app.pdv.selectedClientId = this.activeCondicionalDoc.client_id || 'c1';
             
-            // Define vencimento do crediário padrão
-            const in30Days = new Date();
-            in30Days.setDate(in30Days.getDate() + 30);
-            document.getElementById('checkout-due-date').value = in30Days.toISOString().split('T')[0];
-
-            // Vincula evento temporário de confirmação no botão de checkout
-            const btnConfirmCheckout = document.getElementById('btn-confirm-checkout');
-            
-            // Remove listeners antigos clonando o nó
-            const newBtn = btnConfirmCheckout.cloneNode(true);
-            btnConfirmCheckout.parentNode.replaceChild(newBtn, btnConfirmCheckout);
-            
-            newBtn.addEventListener('click', async () => {
-                await this.finishCondicionalSale();
+            const products = await db.getProducts();
+            sellItems.forEach(item => {
+                const prod = products.find(p => p.id === item.id);
+                if (prod) {
+                    app.pdv.cart.push({ product: prod, qty: item.qty });
+                }
             });
+
+            app.pdv.discount = this.activeCondicionalDoc.discount || 0;
+            app.pdv.addition = this.activeCondicionalDoc.addition || 0;
+            app.pdv.linkedOrcamentoId = this.activeCondicionalDoc.id;
             
-            app.openModal('modal-checkout');
+            // Vai para o PDV para conferência
+            app.switchView('pdv');
+
         } catch (e) {
-            await app.showAlert('Erro ao fechar condicional: ' + e.message);
+            await app.showAlert('Erro ao processar fechamento: ' + e.message);
         }
-    },
 
-    async finishCondicionalSale() {
-        const payMethod = document.getElementById('checkout-payment-method').value;
-        const data = this.checkoutClosureData;
-        
-        if (!data) return;
-
-        try {
-            // Atualiza documento condicional original
-            const docs = await db.getDocuments();
-            const originalDoc = docs.find(d => d.id === data.docId);
-            if (originalDoc) {
-                originalDoc.status = 'finalizado';
-                originalDoc.total = data.total;
-                originalDoc.paymentMethod = payMethod;
-                
-                // Grava histórico de devolução nos itens
-                const inputs = document.querySelectorAll('.cond-return-qty');
-                inputs.forEach(input => {
-                    const idx = parseInt(input.getAttribute('data-idx'));
-                    originalDoc.items[idx].returnedQty = parseInt(input.value) || 0;
-                });
-
-                await db.saveDocument(originalDoc);
-            }
-
-            // Registra financeiro
-            if (payMethod === 'Crediário') {
-                const dueDate = document.getElementById('checkout-due-date').value;
-                await db.saveAccount({
-                    type: 'receber',
-                    desc: `Fecham. Condicional: ${data.docId}`,
-                    client_id: data.client_id,
-                    amount: data.total,
-                    dueDate: dueDate,
-                    status: 'pendente'
-                });
-                await db.updateClientBalance(data.client_id, -data.total);
-            } else {
-                await db.addTransaction({
-                    type: 'receita',
-                    desc: `Faturam. Condicional: ${data.docId}`,
-                    amount: data.total,
-                    category: 'Vendas'
-                });
-            }
-
-            // Restaura o botão de confirmação padrão do checkout para vendas normais
-            app.closeModal('modal-checkout');
-            
-            // Restaura listener original no botão do checkout
-            const btn = document.getElementById('btn-confirm-checkout');
-            const originalBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(originalBtn, btn);
-            originalBtn.addEventListener('click', () => app.pdv.finishSale());
-
-            // Mostra comprovante atualizado
-            if (originalDoc) {
-                app.pdv.showReceipt(originalDoc);
-            }
-
-            await app.showAlert('Condicional faturado com sucesso!');
-            await this.render();
-        } catch (e) {
-            await app.showAlert('Erro ao finalizar venda do condicional: ' + e.message);
-        }
-    }
 };

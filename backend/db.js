@@ -587,6 +587,38 @@ module.exports = {
         return res.rowCount > 0;
     },
 
+    async updateDocument(companyId, docId, docData) {
+        if (useMock) {
+            const doc = mockDb.documents.find(d => d.id === docId && d.company_id === Number(companyId));
+            if (doc) {
+                Object.assign(doc, docData);
+                saveMock();
+                return doc;
+            }
+            return null;
+        }
+        const { total, remaining, status } = docData;
+        const res = await pool.query(`
+            UPDATE documents SET total = COALESCE($1, total), remaining = COALESCE($2, remaining), status = COALESCE($3, status)
+            WHERE id = $4 AND company_id = $5 RETURNING *
+        `, [total, remaining, status, docId, companyId]);
+        
+        if (res.rows.length > 0) {
+            // Se vierem items, o ideal seria atualizar os items tbm, mas pra simplificar o flow atual do condicional...
+            if (docData.items) {
+                await pool.query('DELETE FROM document_items WHERE document_id = $1 AND company_id = $2', [docId, companyId]);
+                for (let item of docData.items) {
+                    await pool.query(`
+                        INSERT INTO document_items (document_id, company_id, product_id, name, price, qty)
+                        VALUES ($1, $2, $3, $4, $5, $6)
+                    `, [docId, companyId, item.id, item.name, item.price, item.qty]);
+                }
+            }
+            return res.rows[0];
+        }
+        return null;
+    },
+
     async cancelDocument(companyId, docId) {
         if (useMock) {
             const doc = mockDb.documents.find(d => d.id === docId && d.company_id === Number(companyId));

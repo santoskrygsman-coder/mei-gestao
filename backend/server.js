@@ -472,6 +472,22 @@ app.put('/api/documents/:id/status', authenticateToken, async (req, res) => {
     }
 });
 
+// Atualização completa de documento
+app.put('/api/documents/:id', authenticateToken, async (req, res) => {
+    const docId = req.params.id;
+    const docData = req.body;
+    try {
+        const updated = await db.updateDocument(req.user.company_id, docId, docData);
+        if (updated) {
+            res.json({ success: true, doc: updated });
+        } else {
+            res.status(404).json({ error: 'Documento não encontrado.' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao atualizar documento.' });
+    }
+});
+
 // Cancelamento de venda
 app.post('/api/documents/:id/cancel', authenticateToken, requireAdmin, async (req, res) => {
     const docId = req.params.id;
