@@ -168,22 +168,35 @@ export const financeiro = {
         document.getElementById('fin-type-context').value = context;
 
         const selectType = document.getElementById('fin-type');
-        selectType.disabled = false;
-
+        
         document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
 
         await this.populateClientsSelect();
 
+        Array.from(selectType.options).forEach(opt => {
+            opt.disabled = false;
+            opt.hidden = false;
+        });
+
         if (context === 'trans') {
+            selectType.disabled = false;
+            Array.from(selectType.options).forEach(opt => {
+                if (opt.value === 'pagar' || opt.value === 'receber') {
+                    opt.disabled = true;
+                    opt.hidden = true;
+                }
+            });
             selectType.value = 'receita';
             this.adjustFormFields('receita');
             document.getElementById('modal-financeiro-title').textContent = 'Novo Lançamento no Caixa';
         } else if (context === 'payable') {
             selectType.value = 'pagar';
+            selectType.disabled = true;
             this.adjustFormFields('pagar');
             document.getElementById('modal-financeiro-title').textContent = 'Nova Conta a Pagar';
         } else if (context === 'receivable') {
             selectType.value = 'receber';
+            selectType.disabled = true;
             this.adjustFormFields('receber');
             document.getElementById('modal-financeiro-title').textContent = 'Nova Conta a Receber (Crediário)';
         }

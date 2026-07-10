@@ -152,25 +152,30 @@ export const relatorios = {
             <tr>
                 <td>(+) Receita Bruta de Vendas</td>
                 <td style="text-align: right;" class="text-success font-weight-600">${app.formatCurrency(receitaBruta)}</td>
+                <td class="text-muted" style="font-size: 0.85rem;">Faturamento total (soma das vendas finalizadas)</td>
             </tr>
             <tr>
                 <td>(-) Custo de Mercadorias Vendidas (CMV)</td>
                 <td style="text-align: right;" class="text-danger">${app.formatCurrency(cmv)}</td>
+                <td class="text-muted" style="font-size: 0.85rem;">Soma do custo de aquisição (preço de custo) dos produtos vendidos</td>
             </tr>
             <tr style="background: rgba(255, 255, 255, 0.02); font-weight: 600;">
                 <td>(=) Lucro Bruto Comercial</td>
                 <td style="text-align: right;" class="text-success">${app.formatCurrency(lucroBruto)}</td>
+                <td class="text-muted" style="font-size: 0.85rem;">Resultado das vendas menos o custo (receita - CMV)</td>
             </tr>
             <tr>
                 <td>(-) Despesas Fixas / Operacionais</td>
                 <td style="text-align: right;" class="text-danger">${app.formatCurrency(despesasOperacionais)}</td>
+                <td class="text-muted" style="font-size: 0.85rem;">Gastos diários (água, luz, aluguel, internet, etc)</td>
             </tr>
             <tr style="background: rgba(59, 130, 246, 0.1); border-top: 2px solid var(--primary); font-size: 1.1rem;">
                 <td style="font-weight: 700;">(=) Lucro Líquido do Período</td>
                 <td style="text-align: right;" class="${lucroLiquido >= 0 ? 'text-success' : 'text-danger'} font-weight-700">${app.formatCurrency(lucroLiquido)}</td>
+                <td class="text-muted" style="font-size: 0.85rem;">O que efetivamente sobrou no bolso do seu negócio</td>
             </tr>
             <tr>
-                <td colspan="2" class="text-muted" style="font-size:0.75rem; text-align: center; font-style: italic;">
+                <td colspan="3" class="text-muted" style="font-size:0.75rem; text-align: center; font-style: italic;">
                     ${lucroLiquido >= 0 ? 'Superávit / Lucro' : 'Déficit / Prejuízo'} (Margem Líquida: ${receitaBruta > 0 ? ((lucroLiquido / receitaBruta) * 100).toFixed(1) : 0}%)
                 </td>
             </tr>
