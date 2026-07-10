@@ -80,7 +80,14 @@ export const financeiro = {
 
     async renderPayable() {
         try {
-            const accounts = (await db.getAccounts()).filter(a => a.type === 'pagar');
+            let accounts = (await db.getAccounts()).filter(a => a.type === 'pagar');
+            
+            const filterEl = document.getElementById('filter-payable');
+            if (filterEl && filterEl.value.trim() !== '') {
+                const term = filterEl.value.toLowerCase().trim();
+                accounts = accounts.filter(a => (a.description || a.desc || '').toLowerCase().includes(term));
+            }
+
             const tbody = document.getElementById('list-payable-body');
             tbody.innerHTML = '';
 
@@ -122,7 +129,14 @@ export const financeiro = {
 
     async renderReceivable() {
         try {
-            const accounts = (await db.getAccounts()).filter(a => a.type === 'receber');
+            let accounts = (await db.getAccounts()).filter(a => a.type === 'receber');
+            
+            const filterEl = document.getElementById('filter-receivable');
+            if (filterEl && filterEl.value.trim() !== '') {
+                const term = filterEl.value.toLowerCase().trim();
+                accounts = accounts.filter(a => (a.description || a.desc || '').toLowerCase().includes(term));
+            }
+
             const tbody = document.getElementById('list-receivable-body');
             tbody.innerHTML = '';
 

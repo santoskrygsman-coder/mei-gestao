@@ -12,6 +12,47 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css?v=2.1.1">
     <link rel="stylesheet" href="css/components.css?v=2.1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css">
+    <style>
+        .introjs-tooltip {
+            background-color: var(--card-bg);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .introjs-arrow.top { border-bottom-color: var(--card-bg); }
+        .introjs-arrow.bottom { border-top-color: var(--card-bg); }
+        .introjs-arrow.left { border-right-color: var(--card-bg); }
+        .introjs-arrow.right { border-left-color: var(--card-bg); }
+        .introjs-tooltipbuttons a {
+            background-color: var(--surface);
+            color: var(--text);
+            text-shadow: none;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .introjs-tooltipbuttons a.introjs-nextbutton {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .introjs-tooltipbuttons a.introjs-nextbutton:hover {
+            background-color: var(--primary-hover);
+        }
+        .introjs-bullets ul li a {
+            background: rgba(255,255,255,0.3);
+        }
+        .introjs-bullets ul li a.active {
+            background: var(--primary);
+        }
+        .introjs-helperLayer {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
     <div id="scanner-flash" class="scanner-flash"></div>
@@ -55,6 +96,10 @@
                 <a class="nav-item" data-view="configuracoes">
                     <i class="fa-solid fa-gear"></i>
                     <span>Configurações</span>
+                </a>
+                <a class="nav-item" onclick="app.tour.startTour()" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; cursor: pointer; color: var(--primary);">
+                    <i class="fa-solid fa-circle-play"></i>
+                    <span>Tour Guiado</span>
                 </a>
             </nav>
             <div class="user-info">
@@ -438,6 +483,9 @@
                                 <i class="fa-solid fa-plus"></i> Adicionar Conta
                             </button>
                         </div>
+                        <div class="mb-2">
+                            <input type="text" id="filter-payable" class="form-control form-control-sm" placeholder="Buscar por descrição (fornecedor)..." style="width: 100%; max-width: 300px;" oninput="app.financeiro.renderPayable()">
+                        </div>
                         <div class="table-responsive">
                             <table class="custom-table" id="table-payable">
                                 <thead>
@@ -463,6 +511,9 @@
                             <button class="btn btn-secondary btn-sm" id="btn-new-receivable">
                                 <i class="fa-solid fa-plus"></i> Adicionar Conta
                             </button>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" id="filter-receivable" class="form-control form-control-sm" placeholder="Buscar por descrição ou cliente..." style="width: 100%; max-width: 300px;" oninput="app.financeiro.renderReceivable()">
                         </div>
                         <div class="table-responsive">
                             <table class="custom-table" id="table-receivable">
@@ -1719,5 +1770,8 @@
             </div>
         </div>
     </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
+    <script type="module" src="js/tour.js"></script>
 </body>
 </html>
