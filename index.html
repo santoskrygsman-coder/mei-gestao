@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css">
     <style>
         .introjs-tooltip {
-            background-color: var(--card-bg) !important;
+            background-color: #0f172a !important;
             color: var(--text) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 12px !important;
@@ -42,10 +42,10 @@
         .introjs-skipbutton:hover {
             color: var(--danger) !important;
         }
-        .introjs-arrow.top { border-bottom-color: var(--card-bg) !important; }
-        .introjs-arrow.bottom { border-top-color: var(--card-bg) !important; }
-        .introjs-arrow.left { border-right-color: var(--card-bg) !important; }
-        .introjs-arrow.right { border-left-color: var(--card-bg) !important; }
+        .introjs-arrow.top { border-bottom-color: #0f172a !important; }
+        .introjs-arrow.bottom { border-top-color: #0f172a !important; }
+        .introjs-arrow.left { border-right-color: #0f172a !important; }
+        .introjs-arrow.right { border-left-color: #0f172a !important; }
         
         .introjs-tooltipbuttons a {
             background-color: var(--surface) !important;
@@ -1816,6 +1816,24 @@
                         <div>
                             <div style="font-weight: 600; font-size: 1.1rem; color: var(--success);"><i class="fa-solid fa-box-open"></i> Como Cadastrar um Produto</div>
                             <div class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">Aprenda a inserir um produto no estoque com preço, código e categoria.</div>
+                        </div>
+                    </button>
+                    <button class="btn btn-outline" style="justify-content: flex-start; text-align: left; padding: 1rem; height: auto;" onclick="app.closeModal('modal-tours'); app.tour.startPdvTour()">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-cash-register"></i> Como Vender no PDV</div>
+                            <div class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">Veja como registrar uma venda rápida no Caixa e escolher a forma de pagamento.</div>
+                        </div>
+                    </button>
+                    <button class="btn btn-outline" style="justify-content: flex-start; text-align: left; padding: 1rem; height: auto;" onclick="app.closeModal('modal-tours'); app.tour.startFinanceiroTour()">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.1rem; color: var(--danger);"><i class="fa-solid fa-money-bill-transfer"></i> Gestão Financeira</div>
+                            <div class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">Aprenda a lançar Contas a Pagar e gerenciar o Contas a Receber.</div>
+                        </div>
+                    </button>
+                    <button class="btn btn-outline" style="justify-content: flex-start; text-align: left; padding: 1rem; height: auto;" onclick="app.closeModal('modal-tours'); app.tour.startClientTour()">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.1rem; color: #a855f7;"><i class="fa-solid fa-users"></i> Cadastrando Clientes</div>
+                            <div class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">Descubra como registrar um novo cliente com WhatsApp e Endereço.</div>
                         </div>
                     </button>
                 </div>
