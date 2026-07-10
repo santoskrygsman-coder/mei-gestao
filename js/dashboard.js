@@ -59,20 +59,39 @@ export const dashboard = {
             .reduce((sum, t) => sum + t.amount, 0);
 
         const limiteAnual = 81000.00;
-        const percent = Math.min(100, (totalVendasAno / limiteAnual) * 100);
+        const realPercent = (totalVendasAno / limiteAnual) * 100;
+        const barPercent = Math.min(100, realPercent);
 
-        document.getElementById('mei-termometro-percent').textContent = `${percent.toFixed(1)}%`;
-        document.getElementById('mei-termometro-sales').textContent = `Acumulado em ${currentYear}: ${app.formatCurrency(totalVendasAno)}`;
+        const statusLabel = document.getElementById('mei-termometro-percent');
+        if (statusLabel) {
+            statusLabel.textContent = `${realPercent.toFixed(1)}%`;
+            if (realPercent > 120) {
+                statusLabel.textContent += ' (Desenquadramento Retroativo)';
+                statusLabel.style.color = 'var(--danger)';
+            } else if (realPercent > 100) {
+                statusLabel.textContent += ' (Excesso até 20%)';
+                statusLabel.style.color = '#f97316'; // Laranja forte
+            } else {
+                statusLabel.style.color = 'var(--primary)';
+            }
+        }
+        
+        const salesLabel = document.getElementById('mei-termometro-sales');
+        if (salesLabel) {
+            salesLabel.textContent = `Acumulado em ${currentYear}: ${app.formatCurrency(totalVendasAno)}`;
+        }
         
         const bar = document.getElementById('mei-termometro-bar');
         if (bar) {
-            bar.style.width = `${percent}%`;
-            if (percent > 95) {
-                bar.style.background = 'var(--danger)';
-            } else if (percent > 80) {
-                bar.style.background = 'var(--warning)';
+            bar.style.width = `${barPercent}%`;
+            if (realPercent > 120) {
+                bar.style.background = 'linear-gradient(90deg, #dc2626, #7f1d1d)'; // Vermelho bem escuro
+            } else if (realPercent > 100) {
+                bar.style.background = 'var(--danger)'; // Passou de 100%
+            } else if (realPercent > 80) {
+                bar.style.background = 'var(--warning)'; // Alerta amarelo
             } else {
-                bar.style.background = 'linear-gradient(90deg, var(--primary), var(--success))';
+                bar.style.background = 'linear-gradient(90deg, var(--primary), var(--success))'; // Tudo OK
             }
         }
     },

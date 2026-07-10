@@ -276,18 +276,15 @@ export const app = {
             const products = await db.getProducts();
             const criticalProducts = products.filter(p => p.stock <= 0);
             if (criticalProducts.length > 0) count++;
-
             // 2. Limite MEI Anual
             const transactions = await db.getTransactions();
             const currentYear = new Date().getFullYear();
             const receitasAno = transactions
-                .filter(t => t.type === 'receita' && t.date.startsWith(currentYear.toString()))
-                .reduce((acc, curr) => acc + curr.value, 0);
+                .filter(t => t.type === 'receita' && new Date(String(t.date).split('T')[0] + 'T12:00:00').getFullYear() === currentYear)
+                .reduce((sum, t) => sum + t.amount, 0);
             
-            if (receitasAno >= 81000) {
-                count++; // Atingiu limite
-            } else if (receitasAno >= 81000 * 0.9) {
-                count++; // Alerta de 90%
+            if (receitasAno >= 81000 * 0.9) {
+                count++;
             }
 
             // 3. Notas de Atualização
@@ -337,21 +334,28 @@ export const app = {
             const transactions = await db.getTransactions();
             const currentYear = new Date().getFullYear();
             const receitasAno = transactions
-                .filter(t => t.type === 'receita' && t.date.startsWith(currentYear.toString()))
-                .reduce((acc, curr) => acc + curr.value, 0);
-            
-            if (receitasAno >= 81000) {
+                .filter(t => t.type === 'receita' && new Date(String(t.date).split('T')[0] + 'T12:00:00').getFullYear() === currentYear)
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            if (receitasAno >= 81000 * 1.2) {
                 alerts.push(`
-                    <div class="glass-card" style="border-left: 4px solid var(--danger);">
-                        <h4 style="margin: 0 0 0.5rem 0; color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Limite MEI Ultrapassado!</h4>
-                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Atenção! Você faturou <strong>R$ ${receitasAno.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong> neste ano. O limite do MEI (R$ 81.000,00) foi excedido. Procure um contador para orientações.</p>
+                    <div class="glass-card" style="border-left: 4px solid #991b1b; background: rgba(153, 27, 27, 0.05);">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;"><i class="fa-solid fa-triangle-exclamation"></i> MEI Estourado (>20%)</h4>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Você faturou <strong>${app.formatCurrency(receitasAno)}</strong>, excedendo o limite em mais de 20%. Isso gera <strong>desenquadramento retroativo</strong> a janeiro. Procure um contador urgente!</p>
+                    </div>
+                `);
+            } else if (receitasAno > 81000) {
+                alerts.push(`
+                    <div class="glass-card" style="border-left: 4px solid #f97316;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #f97316;"><i class="fa-solid fa-triangle-exclamation"></i> Limite MEI Ultrapassado!</h4>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Você faturou <strong>${app.formatCurrency(receitasAno)}</strong> (até 20% acima do limite). Você será desenquadrado no ano que vem e pagará multa sobre o excesso.</p>
                     </div>
                 `);
             } else if (receitasAno >= 81000 * 0.9) {
                 alerts.push(`
                     <div class="glass-card" style="border-left: 4px solid var(--warning);">
                         <h4 style="margin: 0 0 0.5rem 0; color: var(--warning);"><i class="fa-solid fa-circle-exclamation"></i> Limite MEI Próximo!</h4>
-                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Você já faturou <strong>R$ ${receitasAno.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong> neste ano, atingindo mais de 90% do limite do MEI (R$ 81.000,00).</p>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Você já faturou <strong>${app.formatCurrency(receitasAno)}</strong> neste ano, atingindo mais de 90% do limite do MEI (R$ 81.000,00).</p>
                     </div>
                 `);
             }
