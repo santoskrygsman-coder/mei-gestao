@@ -314,7 +314,7 @@ module.exports = {
             INSERT INTO products (id, company_id, barcode, name, category, cost, price, stock, min_stock)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             ON CONFLICT (id, company_id) DO UPDATE 
-            SET barcode=$3, name=$4, category=$5, cost=$6, price=$7, stock=$8, min_stock=$9
+            SET barcode=$3, name=$4, category=$5, cost=$6, price=$7, min_stock=$9
             RETURNING id, company_id, barcode, name, category, cost, price, stock, min_stock as "minStock"
         `, [
             product.id,
