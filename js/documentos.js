@@ -308,5 +308,5 @@ export const documentos = {
         } catch (e) {
             await app.showAlert('Erro ao processar fechamento: ' + e.message);
         }
-
+    }
 };
