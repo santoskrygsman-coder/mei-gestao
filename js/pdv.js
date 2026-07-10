@@ -337,14 +337,16 @@ export const pdv = {
                     <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Ref: ${item.product.barcode}</span>
                 </div>
                 <div>
-                    <input type="number" min="1" class="form-control" value="${item.qty}" style="width: 60px; padding: 0.25rem;" onchange="app.pdv.updateQty(${idx}, this.value)">
+                    <input type="number" min="1" class="form-control" value="${item.qty}" style="width: 70px; padding: 0.25rem;" oninput="app.pdv.updateQty(${idx}, this.value)" onblur="this.value = app.pdv.cart[${idx}].qty">
                 </div>
-                <div>${app.formatCurrency(item.product.price)}</div>
-                <div class="item-total">${app.formatCurrency(itemTotal)}</div>
                 <div>
-                    <button type="button" onclick="app.pdv.removeItem(${idx})">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    ${app.formatCurrency(item.product.price)}
+                </div>
+                <div class="item-total" id="pdv-item-total-${idx}">
+                    ${app.formatCurrency(itemTotal)}
+                </div>
+                <div>
+                    <button type="button" onclick="app.pdv.removeItem(${idx})"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             container.appendChild(div);
@@ -354,10 +356,16 @@ export const pdv = {
     },
 
     updateQty(idx, qtyVal) {
-        const qty = parseInt(qtyVal) || 1;
-        if (qty > 0) {
+        const qty = parseInt(qtyVal);
+        // Permite apagar o campo temporariamente sem erro, mas só atualiza se for >= 1
+        if (!isNaN(qty) && qty > 0) {
             this.cart[idx].qty = qty;
-            this.renderCart();
+            const itemTotal = qty * this.cart[idx].product.price;
+            const itemTotalEl = document.getElementById(`pdv-item-total-${idx}`);
+            if (itemTotalEl) {
+                itemTotalEl.textContent = app.formatCurrency(itemTotal);
+            }
+            this.updateTotals();
         }
     },
 
