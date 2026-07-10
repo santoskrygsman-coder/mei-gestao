@@ -21,12 +21,15 @@ export const documentos = {
         }
     },
 
-    async render() {
+    async render(forceRefresh = true) {
         try {
-            const docs = await db.getDocuments();
+            if (forceRefresh || !this.cachedDocs) {
+                this.cachedDocs = await db.getDocuments();
+            }
+            const docs = this.cachedDocs;
             const tbody = document.getElementById('list-documents-body');
             const searchInput = document.getElementById('doc-search-input');
-            const filterText = searchInput ? searchInput.value.toLowerCase() : '';
+            const filterText = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
             if (!tbody) return;
             tbody.innerHTML = '';
