@@ -830,7 +830,7 @@ module.exports = {
 
         const checkUser = await pool.query('SELECT id FROM users WHERE username = $1', [username.trim().toLowerCase()]);
         if (checkUser.rows.length > 0) {
-            throw new Error('Este login de usuário já está cadastrado.');
+            throw new Error('Este login já está em uso por outra empresa no sistema. Por favor, escolha um login único (ex: use seu e-mail ou nome-da-loja).');
         }
 
         const client = await pool.connect();
