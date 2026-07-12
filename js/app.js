@@ -32,6 +32,7 @@ export const app = {
             
             btnOk.addEventListener('click', close);
             overlay.classList.add('active');
+            setTimeout(() => btnOk.focus(), 50);
         });
     },
 
@@ -49,16 +50,24 @@ export const app = {
             `;
             
             const overlay = document.getElementById('modal-custom-dialog');
+            const btnConfirm = document.getElementById('btn-custom-dialog-confirm');
+            const btnCancel = document.getElementById('btn-custom-dialog-cancel');
             
             const close = (result) => {
                 overlay.classList.remove('active');
+                btnConfirm.removeEventListener('click', onConfirm);
+                btnCancel.removeEventListener('click', onCancel);
                 resolve(result);
             };
             
-            document.getElementById('btn-custom-dialog-cancel').addEventListener('click', () => close(false));
-            document.getElementById('btn-custom-dialog-confirm').addEventListener('click', () => close(true));
+            const onConfirm = () => close(true);
+            const onCancel = () => close(false);
+            
+            btnConfirm.addEventListener('click', onConfirm);
+            btnCancel.addEventListener('click', onCancel);
             
             overlay.classList.add('active');
+            setTimeout(() => btnConfirm.focus(), 50);
         });
     },
 
@@ -780,6 +789,9 @@ export const app = {
 
     async handleLoginSubmit(e) {
         e.preventDefault();
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        if (btnSubmit) btnSubmit.disabled = true;
+        
         const usernameInput = document.getElementById('login-username').value.trim();
         const passwordInput = document.getElementById('login-password').value.trim();
         const errorMsg = document.getElementById('login-error-msg');
@@ -802,11 +814,16 @@ export const app = {
         } catch (err) {
             console.error('Falha ao autenticar:', err);
             if (errorMsg) errorMsg.style.display = 'block';
+        } finally {
+            if (btnSubmit) btnSubmit.disabled = false;
         }
     },
 
     async handleRegisterSubmit(e) {
         e.preventDefault();
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        if (btnSubmit) btnSubmit.disabled = true;
+
         const companyName = document.getElementById('reg-company-name').value.trim();
         const cnpj = document.getElementById('reg-cnpj').value.trim();
         const adminName = document.getElementById('reg-admin-name').value.trim();
@@ -841,6 +858,8 @@ export const app = {
                 errorMsg.textContent = err.message || 'Falha ao registrar empresa.';
                 errorMsg.style.display = 'block';
             }
+        } finally {
+            if (btnSubmit) btnSubmit.disabled = false;
         }
     },
 
