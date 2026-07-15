@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mei-gestao-cache-v8';
+const CACHE_NAME = 'mei-gestao-cache-v9';
 const ASSETS = [
     './',
     './index.html',

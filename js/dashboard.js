@@ -108,18 +108,20 @@ export const dashboard = {
         const products = this.cachedProducts;
         const transactions = this.cachedTransactions;
         const accounts = this.cachedAccounts;
+        const documents = this.cachedDocuments;
         const todayStr = new Date().toISOString().split('T')[0];
 
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
-        const faturamento = transactions
-            .filter(t => {
-                if (t.type !== 'receita') return false;
-                const tDateStr = String(t.date).split('T')[0];
-                const tDate = new Date(tDateStr + 'T12:00:00');
-                return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
+        
+        const faturamento = documents
+            .filter(d => {
+                if (d.type !== 'venda') return false;
+                const dDateStr = String(d.date).split('T')[0];
+                const dDate = new Date(dDateStr + 'T12:00:00');
+                return dDate.getMonth() === currentMonth && dDate.getFullYear() === currentYear;
             })
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, d) => sum + Number(d.total || 0), 0);
 
         document.getElementById('dash-faturamento').textContent = app.formatCurrency(faturamento);
 
@@ -137,7 +139,7 @@ export const dashboard = {
 
         const receberVencido = accounts
             .filter(a => a.type === 'receber' && a.status === 'pendente' && (a.dueDate || a.due_date) < todayStr)
-            .reduce((sum, a) => sum + a.amount, 0);
+            .reduce((sum, a) => sum + Number(a.amount || 0), 0);
 
         document.getElementById('dash-receber-vencido').textContent = app.formatCurrency(receberVencido);
     },
@@ -371,17 +373,17 @@ export const dashboard = {
             const chartData = daysA.map((dateStr, idx) => {
                 const prevDateStr = daysB[idx];
 
-                const salesA = transactions.filter(t => {
-                    const tDateStr = String(t.date).split('T')[0];
-                    return tDateStr === dateStr && t.type === 'receita' && (t.category === 'Vendas' || t.category === 'Fiado');
+                const salesA = (this.cachedDocuments || []).filter(d => {
+                    const dDateStr = String(d.date).split('T')[0];
+                    return dDateStr === dateStr && d.type === 'venda';
                 });
-                const salesB = transactions.filter(t => {
-                    const tDateStr = String(t.date).split('T')[0];
-                    return tDateStr === prevDateStr && t.type === 'receita' && (t.category === 'Vendas' || t.category === 'Fiado');
+                const salesB = (this.cachedDocuments || []).filter(d => {
+                    const dDateStr = String(d.date).split('T')[0];
+                    return dDateStr === prevDateStr && d.type === 'venda';
                 });
 
-                const totalA = salesA.reduce((sum, t) => sum + t.amount, 0);
-                const totalB = salesB.reduce((sum, t) => sum + t.amount, 0);
+                const totalA = salesA.reduce((sum, d) => sum + Number(d.total || 0), 0);
+                const totalB = salesB.reduce((sum, d) => sum + Number(d.total || 0), 0);
 
                 return {
                     label: dateStr.split('-').slice(1, 3).reverse().join('/'), 
