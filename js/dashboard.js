@@ -25,6 +25,14 @@ export const dashboard = {
 
     async render() {
         try {
+            document.getElementById('dash-faturamento').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-muted" style="font-size: 0.9em;"></i>';
+            document.getElementById('dash-estoque-total').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-muted" style="font-size: 0.9em;"></i>';
+            document.getElementById('dash-estoque-critico').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-muted" style="font-size: 0.9em;"></i>';
+            document.getElementById('dash-receber-vencido').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-muted" style="font-size: 0.9em;"></i>';
+            
+            document.getElementById('mei-termometro-percent').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-muted" style="font-size: 0.9em;"></i>';
+            document.getElementById('mei-termometro-sales').innerHTML = 'Carregando...';
+
             const [transactions, products, accounts] = await Promise.all([
                 db.getTransactions(),
                 db.getProducts(),
