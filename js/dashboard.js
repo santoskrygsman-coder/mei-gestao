@@ -33,15 +33,17 @@ export const dashboard = {
             document.getElementById('mei-termometro-percent').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-muted" style="font-size: 0.9em;"></i>';
             document.getElementById('mei-termometro-sales').innerHTML = 'Carregando...';
 
-            const [transactions, products, accounts] = await Promise.all([
+            const [transactions, products, accounts, documents] = await Promise.all([
                 db.getTransactions(),
                 db.getProducts(),
-                db.getAccounts()
+                db.getAccounts(),
+                db.getDocuments()
             ]);
             
             this.cachedTransactions = transactions;
             this.cachedProducts = products;
             this.cachedAccounts = accounts;
+            this.cachedDocuments = documents;
 
             this.updateMetrics();
             this.renderRecentTransactions();
