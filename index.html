@@ -159,6 +159,11 @@
                 </div>
             </header>
 
+            <div class="shutdown-banner" style="margin-left: 1.5rem; margin-right: 1.5rem; margin-top: 1rem;">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Aviso Importante: Desativação do Sistema</h3>
+                <p>O sistema <strong>MEI Gestão</strong> será <strong>desativado permanentemente no dia 10 de Agosto</strong> por falta de recursos. Por favor, realize o backup ou anote seus dados essenciais antes desta data. Agradecemos a todos que utilizaram nossa plataforma.</p>
+            </div>
+
             <!-- Telas (Views) -->
 
             <!-- 1. DASHBOARD VIEW -->
@@ -1365,6 +1370,10 @@
         <div class="login-blob login-blob-2" style="background: radial-gradient(circle, #a855f7 0%, #ec4899 100%);"></div>
         
         <div class="login-card-container">
+            <div class="shutdown-banner">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Aviso Importante</h3>
+                <p>O sistema <strong>MEI Gestão</strong> será <strong>desativado permanentemente no dia 10 de Agosto</strong> por falta de recursos. Por favor, realize o backup de seus dados antes desta data. Agradecemos a compreensão.</p>
+            </div>
             <div class="login-glass-card" style="border-color: rgba(244, 63, 94, 0.25);">
                 <div style="text-align: center; margin-bottom: 2rem;">
                     <div class="login-emblem" style="background: linear-gradient(135deg, #f43f5e 0%, #a855f7 100%); animation: none; box-shadow: 0 0 20px rgba(244, 63, 94, 0.45);"><i class="fa-solid fa-lock"></i></div>
@@ -1439,6 +1448,32 @@
                 width: 100%;
                 max-width: 420px;
             }
+            
+            .shutdown-banner {
+                background: rgba(220, 53, 69, 0.15);
+                border: 1px solid var(--danger);
+                border-left: 4px solid var(--danger);
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+                border-radius: 8px;
+                text-align: left;
+                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.15);
+            }
+            .shutdown-banner h3 {
+                color: #f87171;
+                margin: 0 0 0.5rem 0;
+                font-size: 1.05rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .shutdown-banner p {
+                margin: 0;
+                font-size: 0.9rem;
+                color: var(--text);
+                line-height: 1.4;
+            }
+            
             .login-glass-card {
                 background: rgba(13, 20, 37, 0.45);
                 backdrop-filter: blur(25px);
