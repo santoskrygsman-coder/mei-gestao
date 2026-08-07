@@ -8,14 +8,23 @@ const prisma = new PrismaClient();
 router.use(authenticateToken);
 
 // 1. Produtos Mais Vendidos
-router.get('/top-products', async (req: Request, res: Response) => {
+router.get('/top-products', async (req: Request, res: Response, next) => {
   try {
     const { companyId } = req.user as any;
+    const { startDate, endDate } = req.query;
+    
+    const dateFilter = startDate && endDate ? {
+      createdAt: {
+        gte: new Date(startDate as string),
+        lte: new Date(endDate as string)
+      }
+    } : {};
     
     const saleItems = await prisma.saleItem.findMany({
       where: {
         sale: {
-          companyId
+          companyId,
+          ...dateFilter
         }
       },
       include: {
@@ -41,17 +50,25 @@ router.get('/top-products', async (req: Request, res: Response) => {
     const result = Object.values(productSales).sort((a, b) => b.quantity - a.quantity);
     res.json(result);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao gerar relatório de produtos' });
+    next(error);
   }
 });
 
 // 2. Melhores Clientes
-router.get('/top-customers', async (req: Request, res: Response) => {
+router.get('/top-customers', async (req: Request, res: Response, next) => {
   try {
     const { companyId } = req.user as any;
+    const { startDate, endDate } = req.query;
+    
+    const dateFilter = startDate && endDate ? {
+      createdAt: {
+        gte: new Date(startDate as string),
+        lte: new Date(endDate as string)
+      }
+    } : {};
     
     const sales = await prisma.sale.findMany({
-      where: { companyId, customerId: { not: null } },
+      where: { companyId, customerId: { not: null }, ...dateFilter },
       include: { customer: true }
     });
 
@@ -73,17 +90,25 @@ router.get('/top-customers', async (req: Request, res: Response) => {
     const result = Object.values(customerSales).sort((a, b) => b.totalSpent - a.totalSpent);
     res.json(result);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao gerar relatório de clientes' });
+    next(error);
   }
 });
 
 // 3. Resumo Financeiro
-router.get('/financial', async (req: Request, res: Response) => {
+router.get('/financial', async (req: Request, res: Response, next) => {
   try {
     const { companyId } = req.user as any;
+    const { startDate, endDate } = req.query;
+    
+    const dateFilter = startDate && endDate ? {
+      date: {
+        gte: new Date(startDate as string),
+        lte: new Date(endDate as string)
+      }
+    } : {};
     
     const transactions = await prisma.transaction.findMany({
-      where: { companyId }
+      where: { companyId, ...dateFilter }
     });
 
     let totalIncome = 0;
@@ -107,7 +132,7 @@ router.get('/financial', async (req: Request, res: Response) => {
       expensesByCategory: Object.entries(categoryBreakdown).map(([name, value]) => ({ name, value }))
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao gerar resumo financeiro' });
+    next(error);
   }
 });
 

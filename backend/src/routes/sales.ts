@@ -8,11 +8,20 @@ const prisma = new PrismaClient();
 router.use(authenticateToken);
 
 // Listar Vendas (Histórico do PDV)
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response, next) => {
   try {
     const { companyId } = req.user as any;
+    const { startDate, endDate } = req.query;
+
+    const dateFilter = startDate && endDate ? {
+      createdAt: {
+        gte: new Date(startDate as string),
+        lte: new Date(endDate as string)
+      }
+    } : {};
+
     const sales = await prisma.sale.findMany({
-      where: { companyId },
+      where: { companyId, ...dateFilter },
       include: {
         customer: true,
         items: {
@@ -25,7 +34,7 @@ router.get('/', async (req: Request, res: Response) => {
     });
     res.json(sales);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao listar vendas' });
+    next(error);
   }
 });
 

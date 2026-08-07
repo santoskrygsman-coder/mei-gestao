@@ -25,7 +25,12 @@ export default function Reports() {
   const [financial, setFinancial] = useState<any>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterMonth, setFilterMonth] = useState('all');
+  
+  // Date Filters
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+  const [startDate, setStartDate] = useState(format(firstDay, 'yyyy-MM-dd'));
+  const [endDate, setEndDate] = useState(format(today, 'yyyy-MM-dd'));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,18 +43,19 @@ export default function Reports() {
         }
 
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const queryParams = `?startDate=${startDate}T00:00:00.000Z&endDate=${endDate}T23:59:59.999Z`;
         
         if (activeTab === 'sales') {
-          const response = await fetch(`${apiUrl}/api/sales`, { headers: { 'Authorization': `Bearer ${token}` } });
+          const response = await fetch(`${apiUrl}/api/sales${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` } });
           if (response.ok) setSales(await response.json());
         } else if (activeTab === 'products') {
-          const response = await fetch(`${apiUrl}/api/reports/top-products`, { headers: { 'Authorization': `Bearer ${token}` } });
+          const response = await fetch(`${apiUrl}/api/reports/top-products${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` } });
           if (response.ok) setTopProducts(await response.json());
         } else if (activeTab === 'customers') {
-          const response = await fetch(`${apiUrl}/api/reports/top-customers`, { headers: { 'Authorization': `Bearer ${token}` } });
+          const response = await fetch(`${apiUrl}/api/reports/top-customers${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` } });
           if (response.ok) setTopCustomers(await response.json());
         } else if (activeTab === 'financial') {
-          const response = await fetch(`${apiUrl}/api/reports/financial`, { headers: { 'Authorization': `Bearer ${token}` } });
+          const response = await fetch(`${apiUrl}/api/reports/financial${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` } });
           if (response.ok) setFinancial(await response.json());
         }
       } catch (error) {
@@ -60,7 +66,7 @@ export default function Reports() {
     };
 
     fetchData();
-  }, [navigate, activeTab]);
+  }, [navigate, activeTab, startDate, endDate]);
 
   const paymentMethodMap: Record<string, string> = {
     'CASH': 'Dinheiro', 'PIX': 'PIX', 'CREDIT': 'Crédito', 'DEBIT': 'Débito'
@@ -69,12 +75,7 @@ export default function Reports() {
   const filteredSales = sales.filter(s => {
     const matchesSearch = s.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (s.customer?.name || 'Consumidor Final').toLowerCase().includes(searchTerm.toLowerCase());
-    let matchesMonth = true;
-    if (filterMonth !== 'all') {
-      const saleMonth = new Date(s.createdAt).getMonth().toString();
-      matchesMonth = saleMonth === filterMonth;
-    }
-    return matchesSearch && matchesMonth;
+    return matchesSearch;
   });
 
   const totalSalesValue = filteredSales.reduce((acc, curr) => acc + curr.total, 0);
@@ -102,19 +103,6 @@ export default function Reports() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-              </div>
-              
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                <Filter className="text-gray-400" size={20} />
-                <select 
-                  className="w-full md:w-48 p-2.5 bg-white border border-gray-200 rounded-lg outline-none shadow-sm"
-                  value={filterMonth}
-                  onChange={(e) => setFilterMonth(e.target.value)}
-                >
-                  <option value="all">Todos os Meses</option>
-                  <option value={new Date().getMonth().toString()}>Mês Atual</option>
-                  <option value={(new Date().getMonth() - 1).toString()}>Mês Anterior</option>
-                </select>
               </div>
             </div>
 
@@ -316,8 +304,33 @@ export default function Reports() {
       </div>
 
       {/* Conteúdo do Relatório */}
-      <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[calc(100vh-120px)] min-h-[500px]">
-        {renderContent()}
+      <div className="flex-1 flex flex-col">
+        {/* Date Filter Bar */}
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="flex items-center gap-2 text-gray-700">
+            <Filter size={20} className="text-blue-600" />
+            <span className="font-bold">Filtrar por Período</span>
+          </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <input 
+              type="date"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-auto"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <span className="text-gray-400">até</span>
+            <input 
+              type="date"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-auto"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[500px]">
+          {renderContent()}
+        </div>
       </div>
       
     </div>
