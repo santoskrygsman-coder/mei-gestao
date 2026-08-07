@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { PackageOpen, CheckCircle2, XCircle, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { FeedbackModal } from '../components/FeedbackModal';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 export default function Condicionais() {
   const [sales, setSales] = useState<any[]>([]);
@@ -12,7 +13,12 @@ export default function Condicionais() {
   const [finalizeModalOpen, setFinalizeModalOpen] = useState(false);
   const [selectedCondicional, setSelectedCondicional] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState('CREDIT');
+  const [installments, setInstallments] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Confirm Return Modal State
+  const [confirmReturnOpen, setConfirmReturnOpen] = useState(false);
+  const [condicionalToReturn, setCondicionalToReturn] = useState<string | null>(null);
 
   const fetchSales = async () => {
     const token = localStorage.getItem('token');
@@ -66,14 +72,20 @@ export default function Condicionais() {
     }
   };
 
-  const handleReturn = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja devolver esta condicional? Os itens voltarão para o estoque.')) return;
+  const confirmReturn = (id: string) => {
+    setCondicionalToReturn(id);
+    setConfirmReturnOpen(true);
+  };
+
+  const handleReturn = async () => {
+    if (!condicionalToReturn) return;
+    setConfirmReturnOpen(false);
     
     const token = localStorage.getItem('token');
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     try {
-      const res = await fetch(`${apiUrl}/api/sales/${id}/return`, {
+      const res = await fetch(`${apiUrl}/api/sales/${condicionalToReturn}/return`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -104,6 +116,15 @@ export default function Condicionais() {
         title={modalState.title}
         message={modalState.message}
         onClose={() => setModalState({ ...modalState, isOpen: false })}
+      />
+      
+      <ConfirmModal
+        isOpen={confirmReturnOpen}
+        title="Devolver Condicional?"
+        message="Os itens retornarão para o estoque imediatamente. Tem certeza que deseja cancelar esta condicional?"
+        confirmText="Sim, Devolver"
+        onConfirm={handleReturn}
+        onCancel={() => setConfirmReturnOpen(false)}
       />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -158,7 +179,7 @@ export default function Condicionais() {
 
             <div className="grid grid-cols-2 gap-3 mt-auto">
               <button 
-                onClick={() => handleReturn(sale.id)}
+                onClick={() => confirmReturn(sale.id)}
                 className="py-2 px-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 <XCircle size={18} /> Devolver
@@ -167,6 +188,7 @@ export default function Condicionais() {
                 onClick={() => {
                   setSelectedCondicional(sale);
                   setPaymentMethod('CREDIT');
+                  setInstallments(1);
                   setFinalizeModalOpen(true);
                 }}
                 className="py-2 px-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
@@ -215,6 +237,27 @@ export default function Condicionais() {
                   <option value="CASH">Dinheiro</option>
                 </select>
               </div>
+
+              {paymentMethod === 'CREDIT' && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Número de Parcelas</label>
+                  <select 
+                    className="w-full p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 text-lg font-medium"
+                    value={installments}
+                    onChange={(e) => setInstallments(Number(e.target.value))}
+                  >
+                    {[...Array(12)].map((_, i) => {
+                      const times = i + 1;
+                      const valuePerInstallment = selectedCondicional.total / times;
+                      return (
+                        <option key={times} value={times}>
+                          {times}x de R$ {valuePerInstallment.toFixed(2)}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
 
               <div className="flex gap-3 w-full">
                 <button
