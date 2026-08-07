@@ -1,0 +1,39 @@
+name: mei-gestao-saas
+services:
+  - name: backend
+    github:
+      branch: master
+      repo: santoskrygsman-coder/mei-gestao
+      deploy_on_push: true
+    source_dir: backend
+    environment_slug: node-js
+    build_command: npm install && npx prisma generate && npm run build
+    run_command: npx prisma db push --accept-data-loss && npm start
+    http_port: 8080
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_AND_BUILD_TIME
+        value: ${db.DATABASE_URL}
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        value: "mude-este-segredo-no-painel-do-digitalocean-depois"
+
+static_sites:
+  - name: frontend
+    github:
+      branch: master
+      repo: santoskrygsman-coder/mei-gestao
+      deploy_on_push: true
+    source_dir: /
+    environment_slug: node-js
+    build_command: npm install && npm run build
+    output_dir: dist
+    envs:
+      - key: VITE_API_URL
+        scope: RUN_AND_BUILD_TIME
+        value: ${backend.PUBLIC_URL}
+
+databases:
+  - engine: PG
+    name: db
+    version: "12"
