@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import transactionRoutes from './routes/transactions';
+import productRoutes from './routes/products';
+import customerRoutes from './routes/customers';
+import saleRoutes from './routes/sales';
 
 dotenv.config();
 
@@ -13,6 +16,9 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/sales', saleRoutes);
 
 const PORT = process.env.PORT || 3001;
 

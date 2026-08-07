@@ -24,6 +24,9 @@ model Company {
   // Relations
   users        User[]
   transactions Transaction[]
+  products     Product[]
+  customers    Customer[]
+  sales        Sale[]
 }
 
 model User {
@@ -55,4 +58,66 @@ model Transaction {
   // Multi-tenancy isolation
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  barcode     String?
+  costPrice   Float    @default(0)
+  salePrice   Float
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  saleItems   SaleItem[]
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  document    String?  // CPF/CNPJ
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  sales       Sale[]
+}
+
+model Sale {
+  id          String   @id @default(uuid())
+  total       Float
+  status      String   @default("COMPLETED")
+  paymentMethod String @default("CASH") // CASH, PIX, CREDIT, DEBIT
+  createdAt   DateTime @default(now())
+
+  // Opcional: vinculado a um cliente
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+
+  // Multi-tenancy
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  items       SaleItem[]
+}
+
+model SaleItem {
+  id          String   @id @default(uuid())
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+
+  saleId      String
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
 }
