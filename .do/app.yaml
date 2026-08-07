@@ -8,7 +8,7 @@ services:
     source_dir: backend
     environment_slug: node-js
     build_command: npm install && npx prisma generate && npm run build
-    run_command: npx prisma db push --accept-data-loss && npm start
+    run_command: node scripts/start.js
     http_port: 8080
     routes:
       - path: /api
@@ -40,4 +40,4 @@ static_sites:
 databases:
   - engine: PG
     name: db
-    version: "14"
+    version: "15"
