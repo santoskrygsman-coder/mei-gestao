@@ -10,6 +10,8 @@ services:
     build_command: npm install && npx prisma generate && npm run build
     run_command: npx prisma db push --accept-data-loss && npm start
     http_port: 8080
+    routes:
+      - path: /api
     envs:
       - key: DATABASE_URL
         scope: RUN_AND_BUILD_TIME
@@ -28,10 +30,12 @@ static_sites:
     environment_slug: node-js
     build_command: npm install && npm run build
     output_dir: dist
+    routes:
+      - path: /
     envs:
       - key: VITE_API_URL
         scope: RUN_AND_BUILD_TIME
-        value: ${backend.PUBLIC_URL}
+        value: ""
 
 databases:
   - engine: PG
