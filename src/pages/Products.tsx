@@ -72,6 +72,13 @@ export default function Products() {
     fetchProducts();
   }, []);
 
+  const formatCurrency = (val: string) => {
+    const v = val.replace(/\D/g, "");
+    if (!v) return "";
+    const num = Number(v) / 100;
+    return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -86,13 +93,13 @@ export default function Products() {
         body: JSON.stringify({
           name,
           barcode,
-          costPrice,
-          salePrice,
-          stock,
-          minStock,
           category,
           description,
-          imageUrl
+          imageUrl,
+          costPrice: Number(costPrice.replace(/\./g, "").replace(",", ".")),
+          salePrice: Number(salePrice.replace(/\./g, "").replace(",", ".")),
+          stock: Number(stock),
+          minStock: Number(minStock)
         })
       });
 
@@ -248,13 +255,13 @@ export default function Products() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Custo (R$)</label>
-                    <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={costPrice} onChange={e => setCostPrice(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Venda (R$)</label>
-                    <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={salePrice} onChange={e => setSalePrice(e.target.value)} />
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preço de Custo (R$)</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right" value={costPrice} onChange={e => setCostPrice(formatCurrency(e.target.value))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preço de Venda (R$)</label>
+                  <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right" value={salePrice} onChange={e => setSalePrice(formatCurrency(e.target.value))} />
+                </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

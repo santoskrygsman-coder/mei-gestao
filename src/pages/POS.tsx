@@ -123,16 +123,18 @@ export default function POS() {
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.salePrice * item.cartQuantity), 0);
 
-  const initiateCheckout = () => {
+  const initiateCheckout = (status: 'COMPLETED' | 'CONDICIONAL' = 'COMPLETED') => {
     if (cart.length === 0) return;
-    if (paymentMethod === 'CREDIT') {
+    if (status === 'CONDICIONAL') {
+      handleCheckout('CONDICIONAL');
+    } else if (paymentMethod === 'CREDIT') {
       setCreditModalOpen(true);
     } else {
-      handleCheckout();
+      handleCheckout('COMPLETED');
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (status: 'COMPLETED' | 'CONDICIONAL' = 'COMPLETED') => {
     if (cart.length === 0) return;
     setIsProcessing(true);
     setCreditModalOpen(false); // Close it if it was open
@@ -143,7 +145,8 @@ export default function POS() {
       
       const payload = {
         total: cartTotal,
-        paymentMethod,
+        paymentMethod: status === 'CONDICIONAL' ? 'PENDING' : paymentMethod,
+        status,
         installments: paymentMethod === 'CREDIT' ? installments : 1, // Optional: add this to your backend later if needed
         customerId: selectedCustomerId || null,
         items: cart.map(item => ({
@@ -173,38 +176,42 @@ export default function POS() {
           id: saleData.id,
           items: [...cart],
           total: cartTotal,
-          paymentMethod,
+          paymentMethod: status === 'CONDICIONAL' ? 'PENDING' : paymentMethod,
           installments,
           amountReceived,
           change,
           date: new Date().toISOString()
         });
 
-        showModal(
-          'success', 
-          'Venda Finalizada!', 
-          <div className="flex flex-col items-center w-full">
-            <p className="mb-2">A venda foi registrada com sucesso.</p>
-            {paymentMethod === 'CREDIT' && installments > 1 && (
-              <div className="mt-2 text-blue-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 w-full text-center font-medium text-sm">
-                Pagamento em {installments}x no Cartão de Crédito
-              </div>
-            )}
-            {change > 0 && (
-              <div className="mt-2 text-green-700 bg-green-50 px-4 py-3 rounded-lg border border-green-200 w-full font-bold">
-                Troco a devolver: <br/><span className="text-2xl">R$ {change.toFixed(2)}</span>
-              </div>
-            )}
-            
-            <button 
-              onClick={() => window.print()}
-              className="mt-6 w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl transition-colors"
-            >
-              <Printer size={20} />
-              Imprimir Comprovante
-            </button>
-          </div>
-        );
+        if (status === 'CONDICIONAL') {
+          showModal('success', 'Condicional Salva!', 'Os itens foram retirados do estoque. Finalize a venda posteriormente na aba Condicionais.');
+        } else {
+          showModal(
+            'success', 
+            'Venda Finalizada!', 
+            <div className="flex flex-col items-center w-full">
+              <p className="mb-2">A venda foi registrada com sucesso.</p>
+              {paymentMethod === 'CREDIT' && installments > 1 && (
+                <div className="mt-2 text-blue-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 w-full text-center font-medium text-sm">
+                  Pagamento em {installments}x no Cartão de Crédito
+                </div>
+              )}
+              {change > 0 && (
+                <div className="mt-2 text-green-700 bg-green-50 px-4 py-3 rounded-lg border border-green-200 w-full font-bold">
+                  Troco a devolver: <br/><span className="text-2xl">R$ {change.toFixed(2)}</span>
+                </div>
+              )}
+              
+              <button 
+                onClick={() => window.print()}
+                className="mt-6 w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl transition-colors"
+              >
+                <Printer size={20} />
+                Imprimir Comprovante
+              </button>
+            </div>
+          );
+        }
         
         setCart([]);
         setSelectedCustomerId('');
@@ -341,17 +348,27 @@ export default function POS() {
               <span className="text-4xl font-black text-gray-900">R$ {cartTotal.toFixed(2)}</span>
             </div>
 
-            <button 
-              onClick={initiateCheckout}
-              disabled={cart.length === 0 || isProcessing}
-              className="w-full py-5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-200 disabled:shadow-none"
-            >
-              {isProcessing ? 'Processando...' : (
-                <>
-                  <CheckCircle2 size={24} /> Finalizar Venda
-                </>
-              )}
-            </button>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => initiateCheckout('COMPLETED')}
+                disabled={cart.length === 0 || isProcessing}
+                className="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-200 disabled:shadow-none"
+              >
+                {isProcessing ? 'Processando...' : (
+                  <>
+                    <CheckCircle2 size={24} /> Finalizar Venda
+                  </>
+                )}
+              </button>
+
+              <button 
+                onClick={() => initiateCheckout('CONDICIONAL')}
+                disabled={cart.length === 0 || isProcessing}
+                className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-orange-200 disabled:shadow-none"
+              >
+                Salvar como Condicional
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -78,6 +78,24 @@ export default function Customers() {
     fetchCustomers();
   }, []);
 
+  const formatCPF_CNPJ = (val: string) => {
+    const v = val.replace(/\D/g, "");
+    if (v.length <= 11) {
+      return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    }
+    return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+  };
+
+  const formatPhone = (val: string) => {
+    const v = val.replace(/\D/g, "");
+    return v.replace(/(\d{2})(\d{4,5})(\d{4})/, "($1) $2-$3");
+  };
+
+  const formatCEP = (val: string) => {
+    const v = val.replace(/\D/g, "");
+    return v.replace(/(\d{5})(\d{3})/, "$1-$2");
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -209,31 +227,33 @@ export default function Customers() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                  <input required type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={name} onChange={e => setName(e.target.value)} />
+                  <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={name} onChange={e => setName(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={phone} onChange={e => setPhone(e.target.value)} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (Opcional)</label>
+                  <input type="email" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (Opcional)</label>
-                  <input type="email" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={email} onChange={e => setEmail(e.target.value)} />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
+                  <input type="text" maxLength={15} className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={phone} onChange={e => setPhone(formatPhone(e.target.value))} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">CPF ou CNPJ</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={document} onChange={e => setDocument(e.target.value)} />
+                  <input type="text" maxLength={18} className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={document} onChange={e => setDocument(formatCPF_CNPJ(e.target.value))} />
                 </div>
               </div>
 
-              <hr className="my-4 border-gray-100" />
-              
+              <div className="col-span-2 mt-4">
+                <h4 className="font-bold text-gray-700 border-b pb-1 mb-2">Endereço</h4>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={cep} onChange={e => setCep(e.target.value)} placeholder="00000-000" />
+                  <input type="text" maxLength={9} className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={cep} onChange={e => setCep(formatCEP(e.target.value))} placeholder="00000-000" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
