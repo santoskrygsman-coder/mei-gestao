@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------
+// SaaS Multi-tenancy Core Models
+// -----------------------------------------
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Subscription Plan
+  plan      String   @default("free") // free, pro, premium
+  active    Boolean  @default(true)
+  
+  // Relations
+  users        User[]
+  transactions Transaction[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN") // ADMIN, USER
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------
+// Application Models (Isolados por Company)
+// -----------------------------------------
+
+model Transaction {
+  id          String   @id @default(uuid())
+  type        String   // 'income' or 'expense'
+  description String
+  amount      Float
+  date        DateTime
+  category    String?
+  createdAt   DateTime @default(now())
+
+  // Multi-tenancy isolation
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
