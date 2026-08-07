@@ -58,6 +58,8 @@ model Transaction {
   // Multi-tenancy isolation
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, date])
 }
 
 model Product {
@@ -79,6 +81,8 @@ model Product {
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
   saleItems   SaleItem[]
+
+  @@index([companyId])
 }
 
 model Customer {
@@ -107,6 +111,8 @@ model Customer {
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
   sales       Sale[]
+
+  @@index([companyId])
 }
 
 model Sale {
@@ -125,6 +131,8 @@ model Sale {
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   items       SaleItem[]
+
+  @@index([companyId, status])
 }
 
 model SaleItem {

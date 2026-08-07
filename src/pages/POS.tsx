@@ -504,7 +504,7 @@ export default function POS() {
       <div className="hidden print:block w-[80mm] bg-white text-black font-mono text-sm p-2" id="printable-receipt">
         <div className="text-center font-bold text-lg mb-1">COMPROVANTE DE VENDA</div>
         <div className="text-center text-xs mb-3 border-b border-dashed border-gray-400 pb-2">
-          Meu Negócio MEI<br/>
+          OmniCaixa<br/>
           Data: {format(new Date(lastSale.date), "dd/MM/yyyy HH:mm")}<br/>
           Ticket: #{lastSale.id.slice(0, 8).toUpperCase()}
         </div>
