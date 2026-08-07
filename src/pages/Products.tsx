@@ -8,6 +8,8 @@ interface Product {
   costPrice: number;
   salePrice: number;
   stock: number;
+  minStock: number;
+  category: string;
 }
 
 export default function Products() {
@@ -20,6 +22,9 @@ export default function Products() {
   const [costPrice, setCostPrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
   const [stock, setStock] = useState('');
+  const [minStock, setMinStock] = useState('5');
+  const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
 
   const fetchProducts = async () => {
     try {
@@ -58,13 +63,17 @@ export default function Products() {
           barcode,
           costPrice,
           salePrice,
-          stock
+          stock,
+          minStock,
+          category,
+          description
         })
       });
 
       if (res.ok) {
         setIsModalOpen(false);
         setName(''); setBarcode(''); setCostPrice(''); setSalePrice(''); setStock('');
+        setMinStock('5'); setCategory(''); setDescription('');
         fetchProducts();
       }
     } catch (e) {
@@ -127,12 +136,15 @@ export default function Products() {
               ) : (
                 products.map(p => (
                   <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="p-4 font-medium text-gray-900">{p.name}</td>
+                    <td className="p-4">
+                      <div className="font-medium text-gray-900">{p.name}</div>
+                      <div className="text-gray-400 text-xs mt-0.5">{p.category || 'Sem Categoria'}</div>
+                    </td>
                     <td className="p-4 text-gray-500 text-sm">{p.barcode || '-'}</td>
                     <td className="p-4 text-gray-600">R$ {p.costPrice.toFixed(2)}</td>
                     <td className="p-4 text-green-600 font-medium">R$ {p.salePrice.toFixed(2)}</td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${p.stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${p.stock <= p.minStock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                         {p.stock} un
                       </span>
                     </td>
@@ -151,35 +163,57 @@ export default function Products() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
             <h3 className="text-xl font-bold mb-4">Novo Produto</h3>
             <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
-                <input required type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={name} onChange={e => setName(e.target.value)} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
+                  <input required type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={category} onChange={e => setCategory(e.target.value)} placeholder="Ex: Capinhas" />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Código (Barras/SKU)</label>
-                <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={barcode} onChange={e => setBarcode(e.target.value)} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Código (Barras/SKU)</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={barcode} onChange={e => setBarcode(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Qtd Estoque</label>
+                    <input required type="number" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={stock} onChange={e => setStock(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Estoque Mín.</label>
+                    <input required type="number" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={minStock} onChange={e => setMinStock(e.target.value)} />
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Custo (R$)</label>
                   <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={costPrice} onChange={e => setCostPrice(e.target.value)} />
                 </div>
-                <div className="flex-1">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Venda (R$)</label>
                   <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={salePrice} onChange={e => setSalePrice(e.target.value)} />
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade em Estoque</label>
-                <input required type="number" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={stock} onChange={e => setStock(e.target.value)} />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição (Opcional)</label>
+                <textarea rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none" value={description} onChange={e => setDescription(e.target.value)} placeholder="Detalhes do produto..." />
               </div>
-              <div className="flex justify-end gap-3 mt-6">
+
+              <div className="flex justify-end gap-3 mt-6 pt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium">Cancelar</button>
-                <button type="submit" className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Salvar</button>
+                <button type="submit" className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium shadow-sm">Salvar Produto</button>
               </div>
             </form>
           </div>
