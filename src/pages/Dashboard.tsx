@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Plus, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import TransactionModal from '../components/TransactionModal';
 
 interface Transaction {
@@ -77,7 +77,20 @@ export default function Dashboard() {
     else data.despesas += t.amount;
   });
 
-  const chartData = Array.from(chartDataMap.values());
+  const chartData = Array.from(chartDataMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Expense Pie Chart Data
+  const expenseByCategoryMap = new Map<string, number>();
+  transactions.filter(t => t.type === 'expense').forEach(t => {
+    const cat = t.category || 'Outros';
+    expenseByCategoryMap.set(cat, (expenseByCategoryMap.get(cat) || 0) + t.amount);
+  });
+  
+  const pieData = Array.from(expenseByCategoryMap.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
 
   return (
     <div className="text-gray-900 font-sans">
@@ -188,8 +201,43 @@ export default function Dashboard() {
                 )}
               </div>
 
+              {/* Expense Pie Chart */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
+                <h3 className="text-lg font-bold text-gray-900 mb-6">Despesas por Categoria</h3>
+                {pieData.length > 0 ? (
+                  <div className="h-[320px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="45%"
+                          innerRadius={60}
+                          outerRadius={90}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, '']}
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-[320px] flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                    Nenhuma despesa registrada.
+                  </div>
+                )}
+              </div>
+
               {/* Transactions List */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col h-[400px] hover:shadow-md transition-shadow">
+              <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col h-[400px] hover:shadow-md transition-shadow">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Últimas Transações</h3>
                 <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-3 custom-scrollbar">
                   {transactions.length === 0 ? (

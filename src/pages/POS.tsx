@@ -26,6 +26,7 @@ export default function POS() {
   
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('CASH'); // CASH, PIX, CREDIT, DEBIT
+  const [amountReceived, setAmountReceived] = useState<number | ''>('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -121,6 +122,7 @@ export default function POS() {
         alert('Venda finalizada com sucesso!');
         setCart([]);
         setSelectedCustomerId('');
+        setAmountReceived('');
         
         // Atualizar estoque localmente ou recarregar
         const updatedProds = await (await fetch(`${apiUrl}/api/products`, { headers: { 'Authorization': `Bearer ${token}` } })).json();
@@ -247,6 +249,27 @@ export default function POS() {
               <button type="button" onClick={() => setPaymentMethod('DEBIT')} className={`py-2 rounded-lg text-sm font-semibold border ${paymentMethod === 'DEBIT' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600'}`}>Débito</button>
             </div>
           </div>
+
+          {paymentMethod === 'CASH' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Valor Recebido (R$)</label>
+              <input 
+                type="number" 
+                min="0"
+                step="0.01"
+                className="w-full p-2.5 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Ex: 50,00"
+                value={amountReceived}
+                onChange={(e) => setAmountReceived(e.target.value === '' ? '' : Number(e.target.value))}
+              />
+              {typeof amountReceived === 'number' && amountReceived >= cartTotal && cartTotal > 0 && (
+                <div className="mt-2 text-green-700 bg-green-50 p-2 rounded-lg text-sm font-bold border border-green-200 flex justify-between">
+                  <span>Troco a devolver:</span>
+                  <span>R$ {(amountReceived - cartTotal).toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-between items-center py-2">
             <span className="text-gray-500 font-medium">Total a Pagar</span>

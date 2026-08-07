@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Users, Package, LogOut } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, Package, LogOut, FileText } from 'lucide-react';
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function Layout() {
     { name: 'Frente de Caixa', icon: <ShoppingCart size={20} />, path: '/pos' },
     { name: 'Produtos', icon: <Package size={20} />, path: '/products' },
     { name: 'Clientes', icon: <Users size={20} />, path: '/customers' },
+    { name: 'Relatórios', icon: <FileText size={20} />, path: '/reports' },
   ];
 
   return (
