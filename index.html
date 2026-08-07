@@ -79,7 +79,14 @@
         }
     </style>
 </head>
-<body>
+<body class="dark-theme">
+    <!-- Maintenance Overlay -->
+    <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #07090e; z-index: 2147483647; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+        <i class="fa-solid fa-person-digging" style="font-size: 4rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
+        <h1 style="color: white; font-size: 2rem; margin-bottom: 1rem;">Sistema em Manutenção</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 500px; line-height: 1.6;">Estamos passando por uma grande atualização arquitetural para trazer a você uma plataforma SaaS completamente nova, mais rápida e moderna. Voltaremos em breve!</p>
+    </div>
+
     <div id="scanner-flash" class="scanner-flash"></div>
 
     <div id="app-shell">
