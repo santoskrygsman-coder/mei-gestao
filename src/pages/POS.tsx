@@ -142,10 +142,10 @@ export default function POS() {
   };
 
   return (
-    <div className="h-full flex flex-col-reverse md:flex-row gap-6">
+    <div className="h-full flex flex-col-reverse lg:flex-row gap-6">
       
       {/* Esquerda (Agora Carrinho/Caixa Livre): Foco Principal */}
-      <div className="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="w-full lg:w-[55%] xl:w-[60%] flex flex-col h-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden shrink-0">
         <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShoppingCart size={24} />
@@ -268,7 +268,7 @@ export default function POS() {
       </div>
       
       {/* Direita (Agora Lista de Produtos): Menor */}
-      <div className="w-full md:w-[450px] flex flex-col h-full bg-gray-50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden shrink-0">
+      <div className="flex-1 flex flex-col h-full bg-gray-50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-w-[350px]">
         <div className="p-5 border-b border-gray-200 bg-white shadow-sm z-10">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
