@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Package, Trash2 } from 'lucide-react';
 import { FeedbackModal } from '../components/FeedbackModal';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 interface Product {
   id: string;
@@ -26,9 +27,6 @@ export default function Products() {
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('5');
   const [category, setCategory] = useState('');
-  const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'info';
@@ -39,6 +37,14 @@ export default function Products() {
     type: 'success',
     title: '',
     message: ''
+  });
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    productId: string | null;
+  }>({
+    isOpen: false,
+    productId: null
   });
 
   const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
@@ -104,8 +110,15 @@ export default function Products() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja apagar este produto?')) return;
+  const confirmDelete = (id: string) => {
+    setConfirmModal({ isOpen: true, productId: id });
+  };
+
+  const handleDelete = async () => {
+    if (!confirmModal.productId) return;
+    const id = confirmModal.productId;
+    setConfirmModal({ isOpen: false, productId: null });
+    
     try {
       const token = localStorage.getItem('token');
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -188,9 +201,13 @@ export default function Products() {
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <button onClick={() => handleDelete(p.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash2 size={18} />
-                      </button>
+                        <button 
+                          onClick={() => confirmDelete(p.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Excluir"
+                        > 
+                          <Trash2 size={18} />
+                        </button>
                     </td>
                   </tr>
                 ))
@@ -271,6 +288,15 @@ export default function Products() {
         title={modalState.title}
         message={modalState.message}
         onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Excluir Produto"
+        message="Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, productId: null })}
+        confirmText="Excluir"
       />
     </div>
   );

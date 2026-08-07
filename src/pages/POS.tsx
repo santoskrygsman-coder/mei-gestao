@@ -46,6 +46,10 @@ export default function POS() {
     message: ''
   });
 
+  // Credit Card Modal State
+  const [creditModalOpen, setCreditModalOpen] = useState(false);
+  const [installments, setInstallments] = useState(1);
+
   const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
     setModalState({ isOpen: true, type, title, message });
   };
@@ -115,9 +119,19 @@ export default function POS() {
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.salePrice * item.cartQuantity), 0);
 
+  const initiateCheckout = () => {
+    if (cart.length === 0) return;
+    if (paymentMethod === 'CREDIT') {
+      setCreditModalOpen(true);
+    } else {
+      handleCheckout();
+    }
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     setIsProcessing(true);
+    setCreditModalOpen(false); // Close it if it was open
     
     try {
       const token = localStorage.getItem('token');
@@ -126,6 +140,7 @@ export default function POS() {
       const payload = {
         total: cartTotal,
         paymentMethod,
+        installments: paymentMethod === 'CREDIT' ? installments : 1, // Optional: add this to your backend later if needed
         customerId: selectedCustomerId || null,
         items: cart.map(item => ({
           productId: item.id,
@@ -153,6 +168,11 @@ export default function POS() {
           'Venda Finalizada!', 
           <div className="flex flex-col items-center">
             <p className="mb-2">A venda foi registrada com sucesso.</p>
+            {paymentMethod === 'CREDIT' && installments > 1 && (
+              <div className="mt-2 text-blue-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 w-full text-center font-medium text-sm">
+                Pagamento em {installments}x no Cartão de Crédito
+              </div>
+            )}
             {change > 0 && (
               <div className="mt-2 text-green-700 bg-green-50 px-4 py-3 rounded-lg border border-green-200 w-full font-bold">
                 Troco a devolver: <br/><span className="text-2xl">R$ {change.toFixed(2)}</span>
@@ -164,6 +184,7 @@ export default function POS() {
         setCart([]);
         setSelectedCustomerId('');
         setAmountReceived('');
+        setInstallments(1);
         
         // Atualizar estoque localmente ou recarregar
         const updatedProds = await (await fetch(`${apiUrl}/api/products`, { headers: { 'Authorization': `Bearer ${token}` } })).json();
@@ -291,7 +312,7 @@ export default function POS() {
             </div>
 
             <button 
-              onClick={handleCheckout}
+              onClick={initiateCheckout}
               disabled={cart.length === 0 || isProcessing}
               className="w-full py-5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-200 disabled:shadow-none"
             >
@@ -374,6 +395,61 @@ export default function POS() {
         onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
         actionButtonText={modalState.type === 'success' ? 'Nova Venda' : 'Entendi'}
       />
+
+      {/* Modal de Confirmação - Crédito */}
+      {creditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-5 border-b border-gray-100 bg-blue-600 text-white flex justify-between items-center">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <CreditCard size={20} /> Detalhes do Cartão
+              </h3>
+            </div>
+            
+            <div className="p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Valor Total</label>
+                <div className="text-3xl font-black text-gray-900">R$ {cartTotal.toFixed(2)}</div>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Número de Parcelas</label>
+                <select 
+                  className="w-full p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-lg font-medium"
+                  value={installments}
+                  onChange={(e) => setInstallments(Number(e.target.value))}
+                >
+                  {[...Array(12)].map((_, i) => {
+                    const times = i + 1;
+                    const valuePerInstallment = cartTotal / times;
+                    return (
+                      <option key={times} value={times}>
+                        {times}x de R$ {valuePerInstallment.toFixed(2)}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setCreditModalOpen(false)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleCheckout}
+                  disabled={isProcessing}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 transition-all flex justify-center items-center"
+                >
+                  {isProcessing ? 'Aguarde...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

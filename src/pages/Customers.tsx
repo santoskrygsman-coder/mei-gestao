@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Users, Trash2 } from 'lucide-react';
 import { FeedbackModal } from '../components/FeedbackModal';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 interface Customer {
   id: string;
@@ -32,7 +33,6 @@ export default function Customers() {
   const [state, setState] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Feedback Modal State
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'info';
@@ -43,6 +43,14 @@ export default function Customers() {
     type: 'success',
     title: '',
     message: ''
+  });
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    customerId: string | null;
+  }>({
+    isOpen: false,
+    customerId: null
   });
 
   const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
@@ -101,8 +109,15 @@ export default function Customers() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja apagar este cliente?')) return;
+  const confirmDelete = (id: string) => {
+    setConfirmModal({ isOpen: true, customerId: id });
+  };
+
+  const handleDelete = async () => {
+    if (!confirmModal.customerId) return;
+    const id = confirmModal.customerId;
+    setConfirmModal({ isOpen: false, customerId: null });
+    
     try {
       const token = localStorage.getItem('token');
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -169,9 +184,13 @@ export default function Customers() {
                       <div className="text-gray-400 text-xs">{c.city ? `${c.city}/${c.state}` : ''}</div>
                     </td>
                     <td className="p-4 text-right">
-                      <button onClick={() => handleDelete(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash2 size={18} />
-                      </button>
+                        <button 
+                          onClick={() => confirmDelete(c.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Excluir"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                     </td>
                   </tr>
                 ))
@@ -270,6 +289,15 @@ export default function Customers() {
         title={modalState.title}
         message={modalState.message}
         onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Excluir Cliente"
+        message="Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, customerId: null })}
+        confirmText="Excluir"
       />
     </div>
   );
