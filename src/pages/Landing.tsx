@@ -56,7 +56,7 @@ export default function Landing() {
             <p className="text-gray-500 text-lg">Criado especificamente para as necessidades do Microempreendedor Individual.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="bg-gray-50 p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-all">
               <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6">
                 <BarChart3 size={28} />
@@ -84,6 +84,16 @@ export default function Landing() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Controle de Estoque</h3>
               <p className="text-gray-600 leading-relaxed">
                 O adeus final à contagem manual. Cada venda no sistema dá baixa automática no estoque, com alertas para itens acabando.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-all">
+              <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Gestão de Clientes</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Um CRM básico e poderoso. Cadastre clientes, telefone e CPF para fidelizar seu público e manter histórico de vendas.
               </p>
             </div>
           </div>
