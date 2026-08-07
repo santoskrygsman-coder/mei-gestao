@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Package, Trash2 } from 'lucide-react';
+import { FeedbackModal } from '../components/FeedbackModal';
 
 interface Product {
   id: string;
@@ -27,6 +28,22 @@ export default function Products() {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string | React.ReactNode;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
+  const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
+    setModalState({ isOpen: true, type, title, message });
+  };
 
   const fetchProducts = async () => {
     try {
@@ -74,13 +91,16 @@ export default function Products() {
       });
 
       if (res.ok) {
+        showModal('success', 'Produto Salvo', 'O produto foi salvo com sucesso.');
         setIsModalOpen(false);
         setName(''); setBarcode(''); setCostPrice(''); setSalePrice(''); setStock('');
         setMinStock('5'); setCategory(''); setDescription(''); setImageUrl('');
         fetchProducts();
+      } else {
+        showModal('error', 'Erro', 'Erro ao salvar produto.');
       }
     } catch (e) {
-      alert("Erro ao salvar produto");
+      showModal('error', 'Erro', 'Erro de conexão ao salvar produto.');
     }
   };
 
@@ -89,13 +109,18 @@ export default function Products() {
     try {
       const token = localStorage.getItem('token');
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      await fetch(`${apiUrl}/api/products/${id}`, {
+      const res = await fetch(`${apiUrl}/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      fetchProducts();
+      if (res.ok) {
+        showModal('success', 'Produto Deletado', 'O produto foi removido do sistema.');
+        fetchProducts();
+      } else {
+        showModal('error', 'Erro', 'Erro ao deletar produto.');
+      }
     } catch (e) {
-      alert("Erro ao deletar produto");
+      showModal('error', 'Erro', 'Erro de conexão ao deletar produto.');
     }
   };
 
@@ -239,6 +264,14 @@ export default function Products() {
           </div>
         </div>
       )}
+      
+      <FeedbackModal 
+        isOpen={modalState.isOpen}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

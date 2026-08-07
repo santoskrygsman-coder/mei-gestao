@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Users, Trash2 } from 'lucide-react';
+import { FeedbackModal } from '../components/FeedbackModal';
 
 interface Customer {
   id: string;
@@ -30,6 +31,23 @@ export default function Customers() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Feedback Modal State
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string | React.ReactNode;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
+  const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
+    setModalState({ isOpen: true, type, title, message });
+  };
 
   const fetchCustomers = async () => {
     try {
@@ -70,28 +88,36 @@ export default function Customers() {
       });
 
       if (res.ok) {
+        showModal('success', 'Cliente Salvo', 'O cadastro do cliente foi salvo com sucesso.');
         setIsModalOpen(false);
         setName(''); setEmail(''); setPhone(''); setDocument('');
         setCep(''); setAddress(''); setNumber(''); setComplement(''); setNeighborhood(''); setCity(''); setState(''); setNotes('');
         fetchCustomers();
+      } else {
+        showModal('error', 'Erro', 'Erro ao salvar cliente.');
       }
     } catch (e) {
-      alert("Erro ao salvar cliente");
+      showModal('error', 'Erro', 'Erro de conexão ao salvar cliente.');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja apagar este cliente?')) return;
+    if (!window.confirm('Tem certeza que deseja apagar este cliente?')) return;
     try {
       const token = localStorage.getItem('token');
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      await fetch(`${apiUrl}/api/customers/${id}`, {
+      const res = await fetch(`${apiUrl}/api/customers/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      fetchCustomers();
+      if (res.ok) {
+        showModal('success', 'Cliente Deletado', 'O cliente foi removido do sistema.');
+        fetchCustomers();
+      } else {
+        showModal('error', 'Erro', 'Erro ao deletar cliente.');
+      }
     } catch (e) {
-      alert("Erro ao deletar cliente");
+      showModal('error', 'Erro', 'Erro de conexão ao deletar cliente.');
     }
   };
 
@@ -237,6 +263,14 @@ export default function Customers() {
           </div>
         </div>
       )}
+
+      <FeedbackModal 
+        isOpen={modalState.isOpen}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

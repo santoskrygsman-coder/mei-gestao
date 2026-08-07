@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Search, Trash2, CheckCircle2, User, CreditCard, Package } from 'lucide-react';
+import { FeedbackModal } from '../components/FeedbackModal';
 
 interface Product {
   id: string;
@@ -31,6 +32,24 @@ export default function POS() {
   const [paymentMethod, setPaymentMethod] = useState('CASH'); // CASH, PIX, CREDIT, DEBIT
   const [amountReceived, setAmountReceived] = useState<number | ''>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Feedback Modal State
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string | React.ReactNode;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
+  const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
+    setModalState({ isOpen: true, type, title, message });
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,13 +76,13 @@ export default function POS() {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
         if (existing.cartQuantity >= product.stock) {
-          alert('Estoque insuficiente!');
+          showModal('error', 'Estoque Insuficiente', `O produto "${product.name}" só possui ${product.stock} unidades em estoque.`);
           return prev;
         }
         return prev.map(item => item.id === product.id ? { ...item, cartQuantity: item.cartQuantity + 1 } : item);
       }
       if (product.stock <= 0) {
-        alert('Produto sem estoque!');
+        showModal('error', 'Sem Estoque', `O produto "${product.name}" está esgotado.`);
         return prev;
       }
       return [...prev, { ...product, cartQuantity: 1 }];
@@ -78,7 +97,10 @@ export default function POS() {
     setCart(prev => prev.map(item => {
       if (item.id === id) {
         const newQ = item.cartQuantity + delta;
-        if (newQ > item.stock) { alert('Estoque insuficiente'); return item; }
+        if (newQ > item.stock) { 
+          showModal('error', 'Estoque Insuficiente', `O produto "${item.name}" só possui ${item.stock} unidades.`);
+          return item; 
+        }
         if (newQ < 1) return item; // Use removeFromCart to remove
         return { ...item, cartQuantity: newQ };
       }
@@ -122,7 +144,23 @@ export default function POS() {
       });
 
       if (res.ok) {
-        alert('Venda finalizada com sucesso!');
+        const change = (paymentMethod === 'CASH' && typeof amountReceived === 'number') 
+          ? amountReceived - cartTotal 
+          : 0;
+
+        showModal(
+          'success', 
+          'Venda Finalizada!', 
+          <div className="flex flex-col items-center">
+            <p className="mb-2">A venda foi registrada com sucesso.</p>
+            {change > 0 && (
+              <div className="mt-2 text-green-700 bg-green-50 px-4 py-3 rounded-lg border border-green-200 w-full font-bold">
+                Troco a devolver: <br/><span className="text-2xl">R$ {change.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+        );
+        
         setCart([]);
         setSelectedCustomerId('');
         setAmountReceived('');
@@ -131,11 +169,11 @@ export default function POS() {
         const updatedProds = await (await fetch(`${apiUrl}/api/products`, { headers: { 'Authorization': `Bearer ${token}` } })).json();
         setProducts(updatedProds);
       } else {
-        alert('Erro ao finalizar venda.');
+        showModal('error', 'Erro na Venda', 'Ocorreu um erro ao tentar finalizar a venda.');
       }
     } catch (e) {
       console.error(e);
-      alert('Erro de conexão ao finalizar venda.');
+      showModal('error', 'Erro de Conexão', 'Não foi possível conectar ao servidor para finalizar a venda.');
     } finally {
       setIsProcessing(false);
     }
@@ -328,7 +366,14 @@ export default function POS() {
         </div>
       </div>
 
-      
+      <FeedbackModal 
+        isOpen={modalState.isOpen}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+        actionButtonText={modalState.type === 'success' ? 'Nova Venda' : 'Entendi'}
+      />
     </div>
   );
 }
