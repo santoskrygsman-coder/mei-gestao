@@ -19,9 +19,9 @@ export default function Layout() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans">
+    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans print:h-auto print:bg-white">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex">
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex print:hidden">
         <div className="h-16 flex items-center px-6 border-b border-gray-100">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
             <span className="text-white font-bold">M</span>
@@ -63,9 +63,9 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible">
         {/* Mobile Header (Only visible on small screens) */}
-        <header className="md:hidden bg-white h-16 border-b border-gray-200 flex items-center justify-between px-4">
+        <header className="md:hidden bg-white h-16 border-b border-gray-200 flex items-center justify-between px-4 print:hidden">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">M</span>
@@ -78,7 +78,7 @@ export default function Layout() {
         </header>
 
         {/* Scrollable page area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 print:p-0 print:overflow-visible">
           <Outlet />
         </div>
       </main>
