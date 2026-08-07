@@ -26,8 +26,8 @@ export default function Login() {
         throw new Error(data.error || 'Erro ao fazer login.');
       }
       
-      localStorage.setItem('mei_token', data.token);
-      localStorage.setItem('mei_user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       setSuccess('Login realizado! Redirecionando...');
       setTimeout(() => window.location.href = '/dashboard', 1000);
     } catch (err: any) {
