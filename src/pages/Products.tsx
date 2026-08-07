@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus, Package, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Package, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
 import { FeedbackModal } from '../components/FeedbackModal';
 import { ConfirmModal } from '../components/ConfirmModal';
 
@@ -29,6 +29,10 @@ export default function Products() {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [margin, setMargin] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'info';
@@ -81,6 +85,73 @@ export default function Products() {
     return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
+  const getNumericValue = (val: string) => Number(val.replace(/\./g, "").replace(",", "."));
+
+  // Lógica de cálculo de margem
+  const handleCostChange = (val: string) => {
+    const formatted = formatCurrency(val);
+    setCostPrice(formatted);
+    if (margin && formatted) {
+      const cost = getNumericValue(formatted);
+      const m = Number(margin);
+      const sale = cost + (cost * (m / 100));
+      setSalePrice(sale.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    }
+  };
+
+  const handleSaleChange = (val: string) => {
+    const formatted = formatCurrency(val);
+    setSalePrice(formatted);
+    if (costPrice && formatted) {
+      const cost = getNumericValue(costPrice);
+      const sale = getNumericValue(formatted);
+      if (cost > 0) {
+        const m = ((sale - cost) / cost) * 100;
+        setMargin(m.toFixed(2));
+      }
+    }
+  };
+
+  const handleMarginChange = (val: string) => {
+    setMargin(val);
+    if (costPrice && val) {
+      const cost = getNumericValue(costPrice);
+      const m = Number(val);
+      const sale = cost + (cost * (m / 100));
+      setSalePrice(sale.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${apiUrl}/api/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setImageUrl(data.imageUrl);
+      } else {
+        showModal('error', 'Erro', 'Erro ao enviar a imagem.');
+      }
+    } catch (err) {
+      showModal('error', 'Erro', 'Erro de conexão ao enviar a imagem.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -98,8 +169,8 @@ export default function Products() {
           category,
           description,
           imageUrl,
-          costPrice: Number(costPrice.replace(/\./g, "").replace(",", ".")),
-          salePrice: Number(salePrice.replace(/\./g, "").replace(",", ".")),
+          costPrice: getNumericValue(costPrice),
+          salePrice: getNumericValue(salePrice),
           stock: Number(stock),
           minStock: Number(minStock)
         })
@@ -108,7 +179,7 @@ export default function Products() {
       if (res.ok) {
         showModal('success', 'Produto Salvo', 'O produto foi salvo com sucesso.');
         setIsModalOpen(false);
-        setName(''); setBarcode(''); setCostPrice(''); setSalePrice(''); setStock('');
+        setName(''); setBarcode(''); setCostPrice(''); setSalePrice(''); setStock(''); setMargin('');
         setMinStock('5'); setCategory(''); setDescription(''); setImageUrl('');
         fetchProducts();
       } else {
@@ -226,67 +297,129 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal Novo Produto - Redesenhado */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
-            <h3 className="text-xl font-bold mb-4">Novo Produto</h3>
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
-                  <input required type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={name} onChange={e => setName(e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={category} onChange={e => setCategory(e.target.value)} placeholder="Ex: Capinhas" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Código (Barras/SKU)</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={barcode} onChange={e => setBarcode(e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">URL da Imagem (Opcional)</label>
-                  <input type="url" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Preço de Custo (R$)</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right" value={costPrice} onChange={e => setCostPrice(formatCurrency(e.target.value))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Preço de Venda (R$)</label>
-                  <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right" value={salePrice} onChange={e => setSalePrice(formatCurrency(e.target.value))} />
-                </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Qtd Estoque</label>
-                    <input required type="number" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={stock} onChange={e => setStock(e.target.value)} />
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-gray-50 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 bg-white border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Package className="text-blue-600" /> Cadastrar Novo Produto
+              </h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            
+            <form onSubmit={handleSave} className="p-6 overflow-y-auto custom-scrollbar flex-1">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* Coluna da Imagem */}
+                <div className="lg:col-span-1 space-y-4">
+                  <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                    <label className="block text-sm font-bold text-gray-700 mb-3">Foto do Produto</label>
+                    <div 
+                      className={`relative border-2 border-dashed rounded-xl flex flex-col items-center justify-center overflow-hidden transition-all h-56 ${
+                        imageUrl ? 'border-blue-300 bg-blue-50' : 'border-gray-300 hover:border-blue-400 bg-gray-50'
+                      }`}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {uploadingImage ? (
+                        <div className="text-blue-600 flex flex-col items-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                          <span className="text-sm font-medium">Enviando...</span>
+                        </div>
+                      ) : imageUrl ? (
+                        <>
+                          <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                            <span className="text-white font-medium text-sm flex items-center gap-1"><Upload size={16}/> Trocar Foto</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-gray-400 flex flex-col items-center cursor-pointer p-4 text-center">
+                          <ImageIcon size={40} className="mb-2 text-gray-300" />
+                          <span className="text-sm font-medium text-gray-600 mb-1">Clique para enviar</span>
+                          <span className="text-xs text-gray-400">PNG, JPG até 5MB</span>
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleImageUpload} 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Estoque Mín.</label>
-                    <input required type="number" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={minStock} onChange={e => setMinStock(e.target.value)} />
-                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição (Opcional)</label>
-                <textarea rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none" value={description} onChange={e => setDescription(e.target.value)} placeholder="Detalhes do produto..." />
-              </div>
+                {/* Coluna dos Dados */}
+                <div className="lg:col-span-2 space-y-6">
+                  
+                  {/* Informações Básicas */}
+                  <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                    <h4 className="font-bold text-gray-900 border-b border-gray-50 pb-2">Informações Principais</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto *</label>
+                        <input required type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Capinha Silicone iPhone 13" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Código (Barras/SKU)</label>
+                        <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={barcode} onChange={e => setBarcode(e.target.value)} placeholder="0000000000" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                        <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={category} onChange={e => setCategory(e.target.value)} placeholder="Ex: Acessórios" />
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium">Cancelar</button>
-                <button type="submit" className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium shadow-sm">Salvar Produto</button>
+                  {/* Precificação */}
+                  <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                    <h4 className="font-bold text-gray-900 border-b border-gray-50 pb-2">Precificação</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Preço de Custo (R$)</label>
+                        <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono" value={costPrice} onChange={e => handleCostChange(e.target.value)} placeholder="0,00" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Margem Lucro (%)</label>
+                        <input type="number" step="0.01" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-blue-600 font-bold" value={margin} onChange={e => handleMarginChange(e.target.value)} placeholder="Ex: 50" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Preço Venda (R$) *</label>
+                        <input required type="text" className="w-full px-4 py-2.5 bg-blue-50/50 border border-blue-200 text-blue-800 font-bold rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono" value={salePrice} onChange={e => handleSaleChange(e.target.value)} placeholder="0,00" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Estoque e Detalhes */}
+                  <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                    <h4 className="font-bold text-gray-900 border-b border-gray-50 pb-2">Estoque e Detalhes</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Estoque Atual *</label>
+                        <input required type="number" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={stock} onChange={e => setStock(e.target.value)} placeholder="0" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Estoque Mínimo *</label>
+                        <input required type="number" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={minStock} onChange={e => setMinStock(e.target.value)} placeholder="5" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Descrição (Opcional)</label>
+                        <textarea rows={2} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none" value={description} onChange={e => setDescription(e.target.value)} placeholder="Detalhes adicionais do produto..." />
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </form>
+            <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 sticky bottom-0">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl font-medium transition-colors">Cancelar</button>
+              <button onClick={handleSave} disabled={uploadingImage} className="px-6 py-2.5 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-xl font-bold shadow-md shadow-blue-200 transition-colors flex items-center gap-2">
+                <Plus size={20} /> Salvar Produto
+              </button>
+            </div>
           </div>
         </div>
       )}
