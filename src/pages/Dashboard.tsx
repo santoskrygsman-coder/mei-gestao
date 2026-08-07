@@ -193,7 +193,7 @@ export default function Dashboard() {
                         <YAxis tick={{fontSize: 12, fill: '#6b7280'}} tickLine={false} axisLine={false} tickFormatter={(value) => `R$${value}`} />
                         <Tooltip 
                           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }}
-                          formatter={(value: number) => [`R$ ${value.toFixed(2)}`, '']}
+                          formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, '']}
                         />
                         <Area type="monotone" dataKey="receitas" name="Receitas" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorReceitas)" />
                         <Area type="monotone" dataKey="despesas" name="Despesas" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorDespesas)" />
