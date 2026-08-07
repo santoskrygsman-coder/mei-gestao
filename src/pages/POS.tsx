@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Search, Trash2, CheckCircle2, User, CreditCard, Package } from 'lucide-react';
+import { ShoppingCart, Search, Trash2, CheckCircle2, User, CreditCard, Package, Printer } from 'lucide-react';
 import { FeedbackModal } from '../components/FeedbackModal';
+import { format } from 'date-fns';
 
 interface Product {
   id: string;
@@ -49,6 +50,9 @@ export default function POS() {
   // Credit Card Modal State
   const [creditModalOpen, setCreditModalOpen] = useState(false);
   const [installments, setInstallments] = useState(1);
+
+  // Receipt State
+  const [lastSale, setLastSale] = useState<any>(null);
 
   const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
     setModalState({ isOpen: true, type, title, message });
@@ -159,14 +163,27 @@ export default function POS() {
       });
 
       if (res.ok) {
+        const saleData = await res.json();
+        
         const change = (paymentMethod === 'CASH' && typeof amountReceived === 'number') 
           ? amountReceived - cartTotal 
           : 0;
 
+        setLastSale({
+          id: saleData.id,
+          items: [...cart],
+          total: cartTotal,
+          paymentMethod,
+          installments,
+          amountReceived,
+          change,
+          date: new Date().toISOString()
+        });
+
         showModal(
           'success', 
           'Venda Finalizada!', 
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center w-full">
             <p className="mb-2">A venda foi registrada com sucesso.</p>
             {paymentMethod === 'CREDIT' && installments > 1 && (
               <div className="mt-2 text-blue-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200 w-full text-center font-medium text-sm">
@@ -178,6 +195,14 @@ export default function POS() {
                 Troco a devolver: <br/><span className="text-2xl">R$ {change.toFixed(2)}</span>
               </div>
             )}
+            
+            <button 
+              onClick={() => window.print()}
+              className="mt-6 w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl transition-colors"
+            >
+              <Printer size={20} />
+              Imprimir Comprovante
+            </button>
           </div>
         );
         
@@ -200,8 +225,13 @@ export default function POS() {
     }
   };
 
+  const paymentMethodMap: Record<string, string> = {
+    'CASH': 'Dinheiro', 'PIX': 'PIX', 'CREDIT': 'Crédito', 'DEBIT': 'Débito'
+  };
+
   return (
-    <div className="h-full flex flex-col-reverse lg:flex-row gap-6">
+    <>
+    <div className="h-full flex flex-col-reverse lg:flex-row gap-6 print:hidden">
       
       {/* Esquerda (Agora Carrinho/Caixa Livre): Foco Principal */}
       <div className="w-full lg:w-[55%] xl:w-[60%] flex flex-col h-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden shrink-0">
@@ -451,5 +481,71 @@ export default function POS() {
         </div>
       )}
     </div>
+
+    {/* Impressão de Recibo (Oculto na tela, visível apenas no print) */}
+    {lastSale && (
+      <div className="hidden print:block w-[80mm] bg-white text-black font-mono text-sm p-2" id="printable-receipt">
+        <div className="text-center font-bold text-lg mb-1">COMPROVANTE DE VENDA</div>
+        <div className="text-center text-xs mb-3 border-b border-dashed border-gray-400 pb-2">
+          Meu Negócio MEI<br/>
+          Data: {format(new Date(lastSale.date), "dd/MM/yyyy HH:mm")}<br/>
+          Ticket: #{lastSale.id.slice(0, 8).toUpperCase()}
+        </div>
+        
+        <table className="w-full text-left text-xs mb-2">
+          <thead>
+            <tr className="border-b border-dashed border-gray-400">
+              <th className="py-1">Qtd</th>
+              <th className="py-1">Produto</th>
+              <th className="py-1 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lastSale.items.map((item: any) => (
+              <tr key={item.id}>
+                <td className="py-1 align-top">{item.cartQuantity}x</td>
+                <td className="py-1 pr-1 truncate max-w-[120px] align-top">{item.name}</td>
+                <td className="py-1 text-right align-top">R$ {(item.salePrice * item.cartQuantity).toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        <div className="border-t border-dashed border-gray-400 pt-2 mb-3">
+          <div className="flex justify-between font-bold text-base mb-1">
+            <span>TOTAL</span>
+            <span>R$ {lastSale.total.toFixed(2)}</span>
+          </div>
+          
+          <div className="text-xs">
+            <div className="flex justify-between">
+              <span>Pagamento:</span>
+              <span>
+                {paymentMethodMap[lastSale.paymentMethod]} 
+                {lastSale.paymentMethod === 'CREDIT' ? ` (${lastSale.installments}x)` : ''}
+              </span>
+            </div>
+            {lastSale.paymentMethod === 'CASH' && typeof lastSale.amountReceived === 'number' && (
+              <>
+                <div className="flex justify-between">
+                  <span>Recebido:</span>
+                  <span>R$ {lastSale.amountReceived.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Troco:</span>
+                  <span>R$ {lastSale.change.toFixed(2)}</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
+        <div className="text-center text-xs border-t border-dashed border-gray-400 pt-2">
+          Obrigado pela preferência!<br/>
+          Volte sempre!
+        </div>
+      </div>
+    )}
+    </>
   );
 }
