@@ -10,6 +10,7 @@ interface Product {
   stock: number;
   minStock: number;
   category: string;
+  imageUrl?: string;
 }
 
 export default function Products() {
@@ -25,6 +26,7 @@ export default function Products() {
   const [minStock, setMinStock] = useState('5');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   const fetchProducts = async () => {
     try {
@@ -66,14 +68,15 @@ export default function Products() {
           stock,
           minStock,
           category,
-          description
+          description,
+          imageUrl
         })
       });
 
       if (res.ok) {
         setIsModalOpen(false);
         setName(''); setBarcode(''); setCostPrice(''); setSalePrice(''); setStock('');
-        setMinStock('5'); setCategory(''); setDescription('');
+        setMinStock('5'); setCategory(''); setDescription(''); setImageUrl('');
         fetchProducts();
       }
     } catch (e) {
@@ -137,8 +140,19 @@ export default function Products() {
                 products.map(p => (
                   <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td className="p-4">
-                      <div className="font-medium text-gray-900">{p.name}</div>
-                      <div className="text-gray-400 text-xs mt-0.5">{p.category || 'Sem Categoria'}</div>
+                      <div className="flex items-center gap-3">
+                        {p.imageUrl ? (
+                          <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                            <Package size={20} className="text-gray-400" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium text-gray-900">{p.name}</div>
+                          <div className="text-gray-400 text-xs mt-0.5">{p.category || 'Sem Categoria'}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-4 text-gray-500 text-sm">{p.barcode || '-'}</td>
                     <td className="p-4 text-gray-600">R$ {p.costPrice.toFixed(2)}</td>
@@ -183,6 +197,23 @@ export default function Products() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Código (Barras/SKU)</label>
                   <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={barcode} onChange={e => setBarcode(e.target.value)} />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">URL da Imagem (Opcional)</label>
+                  <input type="url" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Custo (R$)</label>
+                    <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={costPrice} onChange={e => setCostPrice(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Venda (R$)</label>
+                    <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={salePrice} onChange={e => setSalePrice(e.target.value)} />
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Qtd Estoque</label>
@@ -192,17 +223,6 @@ export default function Products() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Estoque Mín.</label>
                     <input required type="number" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={minStock} onChange={e => setMinStock(e.target.value)} />
                   </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Custo (R$)</label>
-                  <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={costPrice} onChange={e => setCostPrice(e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Venda (R$)</label>
-                  <input required type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={salePrice} onChange={e => setSalePrice(e.target.value)} />
                 </div>
               </div>
 

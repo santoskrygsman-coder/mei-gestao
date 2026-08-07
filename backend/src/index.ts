@@ -6,6 +6,7 @@ import transactionRoutes from './routes/transactions';
 import productRoutes from './routes/products';
 import customerRoutes from './routes/customers';
 import saleRoutes from './routes/sales';
+import reportsRoutes from './routes/reports';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/sales', saleRoutes);
+app.use('/api/reports', reportsRoutes);
 
 const PORT = process.env.PORT || 3001;
 

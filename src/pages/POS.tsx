@@ -9,6 +9,7 @@ interface Product {
   stock: number;
   barcode: string;
   category?: string;
+  imageUrl?: string;
 }
 
 interface Customer {
@@ -171,9 +172,13 @@ export default function POS() {
                     : 'border-gray-100 bg-gray-100 opacity-60 cursor-not-allowed grayscale'
                 }`}
               >
-                {/* Imagem Placeholder */}
-                <div className="h-32 w-full bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center border-b border-gray-100">
-                  <Package size={48} className="text-gray-300" />
+                {/* Imagem Placeholder ou Real */}
+                <div className="h-32 w-full bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center border-b border-gray-100 overflow-hidden">
+                  {product.imageUrl ? (
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Package size={48} className="text-gray-300" />
+                  )}
                 </div>
                 
                 <div className="p-4 flex-1 flex flex-col">

@@ -25,7 +25,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { companyId } = req.user as any;
-    const { name, barcode, costPrice, salePrice, stock, minStock, category, description } = req.body;
+    const { name, barcode, costPrice, salePrice, stock, minStock, category, description, imageUrl } = req.body;
     
     const product = await prisma.product.create({
       data: {
@@ -37,6 +37,7 @@ router.post('/', async (req: Request, res: Response) => {
         minStock: Number(minStock) || 5,
         category,
         description,
+        imageUrl,
         companyId
       }
     });
