@@ -29,30 +29,33 @@ export default function Register() {
       }
       
       setSuccess('Conta criada com sucesso! Redirecionando...');
-      setTimeout(() => window.location.href = '/', 2000);
+      setTimeout(() => window.location.href = '/login', 2000);
     } catch (err: any) {
       setError(err.message);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="card auth-card">
-        <div className="auth-header">
-          <h1 className="auth-title">Criar Conta</h1>
-          <p className="auth-subtitle">Comece a gerenciar seu MEI agora mesmo</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 font-sans text-gray-900">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200 mx-auto mb-4">
+            <span className="text-white font-bold text-2xl">M</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Criar Conta</h1>
+          <p className="text-gray-500 text-sm">Comece a gerenciar seu MEI agora mesmo</p>
         </div>
 
-        {error && <div style={{ color: 'var(--danger)', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
-        {success && <div style={{ color: 'var(--success)', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>{success}</div>}
+        {error && <div className="mb-4 text-center text-red-600 bg-red-50 py-2 rounded-lg text-sm font-medium border border-red-100">{error}</div>}
+        {success && <div className="mb-4 text-center text-green-600 bg-green-50 py-2 rounded-lg text-sm font-medium border border-green-100">{success}</div>}
 
-        <form onSubmit={handleRegister}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="name">Nome da Empresa / Seu Nome</label>
+        <form onSubmit={handleRegister} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">Nome da Empresa / Seu Nome</label>
             <input 
               id="name"
               type="text" 
-              className="form-input" 
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm" 
               placeholder="Minha Loja MEI"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -60,12 +63,12 @@ export default function Register() {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">E-mail</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">E-mail</label>
             <input 
               id="email"
               type="email" 
-              className="form-input" 
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm" 
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -73,12 +76,12 @@ export default function Register() {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">Senha</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">Senha</label>
             <input 
               id="password"
               type="password" 
-              className="form-input" 
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm" 
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -87,14 +90,14 @@ export default function Register() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 mt-2">
             Criar Minha Conta
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem' }}>
-          <span style={{ color: 'var(--text-muted)' }}>Já tem uma conta? </span>
-          <Link to="/" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>
+        <div className="text-center mt-8 text-sm">
+          <span className="text-gray-500">Já tem uma conta? </span>
+          <Link to="/login" className="text-blue-600 font-bold hover:text-blue-800 transition-colors">
             Fazer login
           </Link>
         </div>
