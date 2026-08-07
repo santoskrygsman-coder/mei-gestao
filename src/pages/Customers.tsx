@@ -7,6 +7,8 @@ interface Customer {
   email: string;
   phone: string;
   document: string;
+  city?: string;
+  state?: string;
 }
 
 export default function Customers() {
@@ -18,6 +20,16 @@ export default function Customers() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [document, setDocument] = useState('');
+  
+  // Novos campos
+  const [cep, setCep] = useState('');
+  const [address, setAddress] = useState('');
+  const [number, setNumber] = useState('');
+  const [complement, setComplement] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [notes, setNotes] = useState('');
 
   const fetchCustomers = async () => {
     try {
@@ -51,12 +63,16 @@ export default function Customers() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name, email, phone, document })
+        body: JSON.stringify({ 
+          name, email, phone, document,
+          cep, address, number, complement, neighborhood, city, state, notes
+        })
       });
 
       if (res.ok) {
         setIsModalOpen(false);
         setName(''); setEmail(''); setPhone(''); setDocument('');
+        setCep(''); setAddress(''); setNumber(''); setComplement(''); setNeighborhood(''); setCity(''); setState(''); setNotes('');
         fetchCustomers();
       }
     } catch (e) {
@@ -122,7 +138,10 @@ export default function Customers() {
                       <div>{c.phone || '-'}</div>
                       <div className="text-gray-400 text-xs">{c.email || ''}</div>
                     </td>
-                    <td className="p-4 text-gray-600">{c.document || '-'}</td>
+                    <td className="p-4 text-gray-600">
+                      <div>{c.document || '-'}</div>
+                      <div className="text-gray-400 text-xs">{c.city ? `${c.city}/${c.state}` : ''}</div>
+                    </td>
                     <td className="p-4 text-right">
                       <button onClick={() => handleDelete(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash2 size={18} />
@@ -138,29 +157,81 @@ export default function Customers() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
             <h3 className="text-xl font-bold mb-4">Novo Cliente</h3>
             <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                <input required type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={name} onChange={e => setName(e.target.value)} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                  <input required type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={phone} onChange={e => setPhone(e.target.value)} />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
-                <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={phone} onChange={e => setPhone(e.target.value)} />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (Opcional)</label>
+                  <input type="email" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CPF ou CNPJ</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={document} onChange={e => setDocument(e.target.value)} />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email (Opcional)</label>
-                <input type="email" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={email} onChange={e => setEmail(e.target.value)} />
+
+              <hr className="my-4 border-gray-100" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={cep} onChange={e => setCep(e.target.value)} placeholder="00000-000" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={address} onChange={e => setAddress(e.target.value)} placeholder="Rua, Avenida..." />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">CPF ou CNPJ</label>
-                <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={document} onChange={e => setDocument(e.target.value)} />
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={number} onChange={e => setNumber(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={complement} onChange={e => setComplement(e.target.value)} />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
+                </div>
               </div>
-              <div className="flex justify-end gap-3 mt-6">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={city} onChange={e => setCity(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Estado (UF)</label>
+                  <input type="text" maxLength={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg uppercase" value={state} onChange={e => setState(e.target.value.toUpperCase())} placeholder="SP, RJ, MG..." />
+                </div>
+              </div>
+
+              <hr className="my-4 border-gray-100" />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Observações (Opcional)</label>
+                <textarea rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Informações adicionais sobre o cliente..." />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium">Cancelar</button>
-                <button type="submit" className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Salvar</button>
+                <button type="submit" className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium shadow-sm">Salvar Cliente</button>
               </div>
             </form>
           </div>

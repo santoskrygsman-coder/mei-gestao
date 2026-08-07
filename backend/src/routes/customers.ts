@@ -25,7 +25,10 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { companyId } = req.user as any;
-    const { name, email, phone, document } = req.body;
+    const { 
+      name, email, phone, document,
+      cep, address, number, complement, neighborhood, city, state, notes
+    } = req.body;
     
     const customer = await prisma.customer.create({
       data: {
@@ -33,6 +36,14 @@ router.post('/', async (req: Request, res: Response) => {
         email,
         phone,
         document,
+        cep,
+        address,
+        number,
+        complement,
+        neighborhood,
+        city,
+        state,
+        notes,
         companyId
       }
     });

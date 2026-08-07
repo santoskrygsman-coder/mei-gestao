@@ -82,6 +82,19 @@ model Customer {
   email       String?
   phone       String?
   document    String?  // CPF/CNPJ
+  
+  // Endereço
+  cep         String?
+  address     String?
+  number      String?
+  complement  String?
+  neighborhood String?
+  city        String?
+  state       String?
+  
+  // Observações
+  notes       String?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
