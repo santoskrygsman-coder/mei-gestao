@@ -1,4 +1,3 @@
-import express from 'react'; // Wait, let's fix this in my head.
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
