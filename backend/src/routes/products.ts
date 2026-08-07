@@ -11,6 +11,7 @@ router.use(authenticateToken);
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { companyId } = req.user as any;
+    const search = req.query.search as string;
     const products = await prisma.product.findMany({
       where: { companyId },
       orderBy: { name: 'asc' }
@@ -51,7 +52,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { companyId } = req.user as any;
-    const { id } = req.params;
+    const id = req.params.id as string;
     
     await prisma.product.delete({
       where: { id, companyId }

@@ -11,7 +11,8 @@ router.use(authenticateToken);
 router.get('/', async (req: Request, res: Response, next) => {
   try {
     const { companyId } = req.user as any;
-    const { startDate, endDate } = req.query;
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
 
     const dateFilter = startDate && endDate ? {
       createdAt: {
@@ -106,7 +107,7 @@ router.post('/', async (req: Request, res: Response) => {
 // Finalizar uma Condicional
 router.post('/:id/finalize', async (req: Request, res: Response) => {
   const { companyId } = req.user as any;
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { paymentMethod } = req.body;
 
   try {
@@ -145,7 +146,7 @@ router.post('/:id/finalize', async (req: Request, res: Response) => {
 // Devolver/Cancelar uma Condicional
 router.post('/:id/return', async (req: Request, res: Response) => {
   const { companyId } = req.user as any;
-  const { id } = req.params;
+  const id = req.params.id as string;
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -163,7 +164,8 @@ router.post('/:id/return', async (req: Request, res: Response) => {
       });
 
       // Devolve itens pro estoque
-      for (const item of sale.items) {
+      const itemsToReturn = (sale as any).items || [];
+      for (const item of itemsToReturn) {
         await tx.product.update({
           where: { id: item.productId },
           data: { stock: { increment: item.quantity } }

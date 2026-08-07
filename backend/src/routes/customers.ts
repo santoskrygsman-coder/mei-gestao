@@ -11,8 +11,14 @@ router.use(authenticateToken);
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { companyId } = req.user as any;
+    const search = req.query.search as string;
     const customers = await prisma.customer.findMany({
-      where: { companyId },
+      where: { 
+        companyId,
+        ...(search && {
+          name: { contains: search, mode: 'insensitive' }
+        })
+      },
       orderBy: { name: 'asc' }
     });
     res.json(customers);
@@ -57,7 +63,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { companyId } = req.user as any;
-    const { id } = req.params;
+    const id = req.params.id as string;
     
     await prisma.customer.delete({
       where: { id, companyId }
