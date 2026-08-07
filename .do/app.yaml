@@ -40,4 +40,4 @@ static_sites:
 databases:
   - engine: PG
     name: db
-    version: "15"
+    version: "14"
