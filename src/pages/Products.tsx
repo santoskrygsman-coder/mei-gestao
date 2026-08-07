@@ -27,6 +27,8 @@ export default function Products() {
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('5');
   const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'info';
