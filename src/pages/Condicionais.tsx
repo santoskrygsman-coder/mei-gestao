@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PackageOpen, CheckCircle2, XCircle, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { FeedbackModal } from '../components/FeedbackModal';
 import { ConfirmModal } from '../components/ConfirmModal';
 
 export default function Condicionais() {
+  const navigate = useNavigate();
   const [sales, setSales] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalState, setModalState] = useState<{isOpen: boolean; type: 'success'|'error'|'info'; title: string; message: string}>({
@@ -101,11 +103,47 @@ export default function Condicionais() {
     }
   };
 
+  const handleLevarAoPDV = async () => {
+    if (!selectedCondicional) return;
+    setIsProcessing(true);
+    const token = localStorage.getItem('token');
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+    try {
+      // 1. Devolve a condicional (volta pro estoque temporariamente)
+      const res = await fetch(`${apiUrl}/api/sales/${selectedCondicional.id}/return`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        // 2. Mapeia itens para o formato do carrinho e envia pro PDV
+        const cartItems = selectedCondicional.items.map((item: any) => ({
+          ...item.product,
+          cartQuantity: item.quantity
+        }));
+        navigate('/pos', { 
+          state: { 
+            resumeCondicional: true, 
+            cart: cartItems, 
+            customerId: selectedCondicional.customerId 
+          } 
+        });
+      } else {
+        showModal('error', 'Erro', 'Não foi possível mover a condicional para o PDV.');
+      }
+    } catch (error) {
+      showModal('error', 'Erro', 'Erro de conexão.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const filteredSales = sales.filter(sale => {
     const searchStr = searchTerm.toLowerCase();
     const customerName = sale.customer?.name?.toLowerCase() || '';
-    const saleId = sale.id.toLowerCase();
-    return customerName.includes(searchStr) || saleId.includes(searchStr);
+    const saleNumStr = String(sale.saleNumber);
+    return customerName.includes(searchStr) || saleNumStr.includes(searchStr) || sale.id.toLowerCase().includes(searchStr);
   });
 
   return (
@@ -138,7 +176,7 @@ export default function Condicionais() {
         <div className="relative w-full sm:w-64">
           <input 
             type="text" 
-            placeholder="Buscar por cliente ou ID..." 
+            placeholder="Buscar por cliente ou Nº da venda..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
@@ -153,7 +191,7 @@ export default function Condicionais() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-full uppercase tracking-wide">
-                  Condicional
+                  Condicional #{String(sale.saleNumber).padStart(4, '0')}
                 </span>
                 <h3 className="font-bold text-gray-900 mt-2 text-lg truncate" title={sale.customer?.name || 'Cliente Não Informado'}>
                   {sale.customer?.name || 'Cliente Não Informado'}
@@ -259,20 +297,29 @@ export default function Condicionais() {
                 </div>
               )}
 
-              <div className="flex gap-3 w-full">
+              <div className="flex flex-col gap-3 w-full">
                 <button
-                  onClick={() => setFinalizeModalOpen(false)}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleFinalize}
+                  onClick={handleLevarAoPDV}
                   disabled={isProcessing}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-md transition-all flex justify-center items-center"
+                  className="w-full py-3 px-4 rounded-xl font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors shadow-sm"
                 >
-                  {isProcessing ? 'Aguarde...' : 'Confirmar'}
+                  Levar itens ao PDV
                 </button>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => setFinalizeModalOpen(false)}
+                    className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleFinalize}
+                    disabled={isProcessing}
+                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-md transition-all flex justify-center items-center"
+                  >
+                    {isProcessing ? 'Aguarde...' : 'Confirmar Pgto.'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

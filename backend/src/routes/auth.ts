@@ -22,8 +22,15 @@ router.post('/register', async (req, res) => {
 
     // 3. Criar Company e User na mesma transação
     const result = await prisma.$transaction(async (tx) => {
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+
       const company = await tx.company.create({
-        data: { name: `Empresa de ${name}` }
+        data: { 
+          name: `Empresa de ${name}`,
+          trialEndsAt,
+          subscriptionStatus: 'trialing'
+        }
       });
 
       const user = await tx.user.create({

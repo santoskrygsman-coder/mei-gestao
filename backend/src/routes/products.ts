@@ -63,4 +63,57 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Editar produto
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { companyId } = req.user as any;
+    const id = req.params.id as string;
+    const { name, barcode, costPrice, salePrice, stock, minStock, category, description, imageUrl } = req.body;
+    
+    const product = await prisma.product.update({
+      where: { id, companyId },
+      data: {
+        name,
+        barcode,
+        costPrice: Number(costPrice) || 0,
+        salePrice: Number(salePrice),
+        stock: Number(stock) || 0,
+        minStock: Number(minStock) || 5,
+        category,
+        description,
+        imageUrl
+      }
+    });
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar produto' });
+  }
+});
+
+// Adicionar Estoque
+router.patch('/:id/stock', async (req: Request, res: Response) => {
+  try {
+    const { companyId } = req.user as any;
+    const id = req.params.id as string;
+    const { amount } = req.body;
+    
+    if (!amount || isNaN(Number(amount))) {
+      return res.status(400).json({ error: 'Quantidade inválida' });
+    }
+
+    const product = await prisma.product.update({
+      where: { id, companyId },
+      data: {
+        stock: {
+          increment: Number(amount)
+        }
+      }
+    });
+    
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar estoque' });
+  }
+});
+
 export default router;

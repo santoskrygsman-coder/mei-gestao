@@ -42,7 +42,10 @@ router.get('/', async (req: Request, res: Response, next) => {
 // Registrar Nova Venda ou Condicional (PDV)
 router.post('/', async (req: Request, res: Response) => {
   const { companyId } = req.user as any;
-  const { total, paymentMethod, customerId, items, status = 'COMPLETED' } = req.body;
+  const { total, paymentMethod, customerId, items, status = 'COMPLETED', installments = 1 } = req.body;
+
+  // Se for CREDIARIO, o status tem que ser PENDING_PAYMENT
+  const finalStatus = paymentMethod === 'CREDIARIO' ? 'PENDING_PAYMENT' : status;
 
   try {
     // Usamos transação do prisma para garantir que tudo salva junto ou falha junto
@@ -51,8 +54,9 @@ router.post('/', async (req: Request, res: Response) => {
       const sale = await tx.sale.create({
         data: {
           total: Number(total),
-          status,
+          status: finalStatus,
           paymentMethod,
+          installments: Number(installments),
           customerId: customerId || null,
           companyId,
           items: {
@@ -79,13 +83,12 @@ router.post('/', async (req: Request, res: Response) => {
         });
       }
 
-      // 3. Registrar a Transação Financeira no Fluxo de Caixa (Dashboard)
       // 3. Registrar a Transação Financeira no Fluxo de Caixa apenas se estiver concluída
-      if (status === 'COMPLETED') {
+      if (finalStatus === 'COMPLETED') {
         await tx.transaction.create({
           data: {
             type: 'income',
-            description: `Venda PDV - #${sale.id.slice(-6)}`,
+            description: `Venda PDV - #${String(sale.saleNumber).padStart(4, '0')}`,
             amount: Number(total),
             category: 'Vendas',
             date: new Date().toISOString(),
@@ -125,7 +128,7 @@ router.post('/:id/finalize', async (req: Request, res: Response) => {
       await tx.transaction.create({
         data: {
           type: 'income',
-          description: `Venda PDV (Condicional Finalizada) - #${sale.id.slice(-6)}`,
+          description: `Venda PDV (Cond. Finalizada) - #${String(sale.saleNumber).padStart(4, '0')}`,
           amount: sale.total,
           category: 'Vendas',
           date: new Date().toISOString(),
@@ -179,6 +182,45 @@ router.post('/:id/return', async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ error: error.message || 'Erro ao devolver condicional' });
+  }
+});
+
+// Pagar uma Notinha (Crediário)
+router.post('/:id/pay', async (req: Request, res: Response) => {
+  const { companyId } = req.user as any;
+  const id = req.params.id as string;
+  const { paymentMethod } = req.body;
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const sale = await tx.sale.findFirst({ where: { id, companyId } });
+      if (!sale || sale.status !== 'PENDING_PAYMENT') {
+        throw new Error('Venda não encontrada ou já está paga');
+      }
+
+      const updatedSale = await tx.sale.update({
+        where: { id },
+        data: { status: 'COMPLETED', paymentMethod }
+      });
+
+      await tx.transaction.create({
+        data: {
+          type: 'income',
+          description: `Recebimento Crediário - #${String(sale.saleNumber).padStart(4, '0')}`,
+          amount: sale.total,
+          category: 'Vendas',
+          date: new Date().toISOString(),
+          companyId
+        }
+      });
+
+      return updatedSale;
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error(error);
+    res.status(400).json({ error: error.message || 'Erro ao receber pagamento' });
   }
 });
 

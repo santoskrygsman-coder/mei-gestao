@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Users, Package, LogOut, FileText, PackageOpen, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, Package, LogOut, FileText, PackageOpen, Moon, Sun, Menu, X, Bookmark } from 'lucide-react';
+import { Logo } from './Logo';
 
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check initial preference
@@ -34,20 +36,34 @@ export default function Layout() {
     { name: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
     { name: 'Frente de Caixa', icon: <ShoppingCart size={20} />, path: '/pos' },
     { name: 'Produtos', icon: <Package size={20} />, path: '/products' },
+    { name: 'Categorias', icon: <Bookmark size={20} />, path: '/categories' },
     { name: 'Condicionais', icon: <PackageOpen size={20} />, path: '/condicionais' },
     { name: 'Clientes', icon: <Users size={20} />, path: '/customers' },
     { name: 'Relatórios', icon: <FileText size={20} />, path: '/reports' },
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans print:h-auto print:bg-white transition-colors duration-200">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans print:h-auto print:bg-white transition-colors duration-200 relative">
+      
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col hidden md:flex print:hidden transition-colors duration-200">
-        <div className="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-            <span className="text-white font-bold">O</span>
+      <aside className={`w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-col md:flex print:hidden transition-all duration-300 ${isMobileMenuOpen ? 'flex fixed inset-y-0 left-0 z-50 shadow-2xl translate-x-0' : 'hidden md:relative md:z-auto md:shadow-none'}`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <Logo className="w-8 h-8" />
+            <span className="font-bold text-lg tracking-tight">Omni Gestão</span>
           </div>
-          <span className="font-bold text-lg tracking-tight">OmniCaixa</span>
+          {/* Close button for mobile inside sidebar */}
+          <button className="md:hidden p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg" onClick={() => setIsMobileMenuOpen(false)}>
+            <X size={20} />
+          </button>
         </div>
         
         <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
@@ -56,7 +72,10 @@ export default function Layout() {
             return (
               <button
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  setIsMobileMenuOpen(false);
+                }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm
                   ${isActive 
                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm' 
@@ -96,12 +115,15 @@ export default function Layout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible">
         {/* Mobile Header (Only visible on small screens) */}
-        <header className="md:hidden bg-white dark:bg-gray-800 h-16 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 print:hidden transition-colors duration-200">
-          <div className="flex items-center gap-2">
+        <header className="md:hidden bg-white dark:bg-gray-800 h-16 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 print:hidden transition-colors duration-200 shrink-0">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <Menu size={24} />
+            </button>
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">O</span>
             </div>
-            <span className="font-bold">OmniCaixa</span>
+            <span className="font-bold">Omni Gestão</span>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={toggleDarkMode} className="p-2 text-gray-600 dark:text-gray-400">

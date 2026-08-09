@@ -1,16 +1,15 @@
 import { Link } from 'react-router-dom';
 import { Shield, Zap, BarChart3, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Logo } from '../components/Logo';
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white font-sans text-gray-900">
       {/* Header */}
       <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-            <span className="text-white font-bold text-xl">M</span>
-          </div>
-          <span className="font-bold text-2xl tracking-tight text-gray-900">MEI Gestão</span>
+        <div className="flex items-center gap-3">
+          <Logo className="w-10 h-10" />
+          <span className="font-bold text-2xl tracking-tight text-gray-900">Omni Gestão</span>
         </div>
         <nav className="flex items-center gap-4">
           <Link to="/login" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Entrar</Link>
@@ -102,13 +101,11 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="bg-gray-900 py-12 text-center text-gray-400">
-        <div className="flex items-center justify-center gap-2 mb-4 opacity-50 grayscale">
-          <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
-            <span className="text-gray-900 font-bold text-xs">M</span>
-          </div>
-          <span className="font-bold tracking-tight text-white">MEI Gestão</span>
+        <div className="flex items-center justify-center gap-3 mb-4 md:mb-0">
+          <Logo className="w-8 h-8 opacity-80" />
+          <span className="font-bold tracking-tight text-white">Omni Gestão</span>
         </div>
-        <p>&copy; {new Date().getFullYear()} MEI Gestão SaaS. Todos os direitos reservados.</p>
+        <p>&copy; {new Date().getFullYear()} Omni Gestão SaaS. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

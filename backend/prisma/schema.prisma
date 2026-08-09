@@ -18,8 +18,11 @@ model Company {
   updatedAt DateTime @updatedAt
   
   // Subscription Plan
-  plan      String   @default("free") // free, pro, premium
-  active    Boolean  @default(true)
+  plan               String    @default("free") // free, pro, premium
+  active             Boolean   @default(true)
+  trialEndsAt        DateTime?
+  stripeCustomerId   String?
+  subscriptionStatus String?   @default("trialing") // trialing, active, past_due, canceled
   
   // Relations
   users        User[]
@@ -27,6 +30,21 @@ model Company {
   products     Product[]
   customers    Customer[]
   sales        Sale[]
+  categories   Category[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // 'PRODUCT' or 'TRANSACTION'
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, type])
 }
 
 model User {
@@ -91,6 +109,7 @@ model Customer {
   email       String?
   phone       String?
   document    String?  // CPF/CNPJ
+  creditLimit Float    @default(0)
   
   // Endereço
   cep         String?
@@ -117,9 +136,11 @@ model Customer {
 
 model Sale {
   id          String   @id @default(uuid())
+  saleNumber  Int      @default(autoincrement())
   total       Float
-  status      String   @default("COMPLETED")
-  paymentMethod String @default("CASH") // CASH, PIX, CREDIT, DEBIT
+  status      String   @default("COMPLETED") // COMPLETED, PENDING_PAYMENT, CONDICIONAL
+  paymentMethod String @default("CASH") // CASH, PIX, CREDIT, DEBIT, CREDIARIO
+  installments  Int    @default(1)
   createdAt   DateTime @default(now())
 
   // Opcional: vinculado a um cliente

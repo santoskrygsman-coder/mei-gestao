@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Plus, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import TransactionModal from '../components/TransactionModal';
+import { CardSkeleton, Skeleton } from '../components/Skeleton';
 
 interface Transaction {
   id: string;
@@ -68,7 +69,9 @@ export default function Dashboard() {
   const chartDataMap = new Map<string, { date: string; receitas: number; despesas: number }>();
   
   [...transactions].reverse().forEach(t => {
-    const day = format(parseISO(t.date), 'dd/MMM', { locale: ptBR });
+    // Evita problema de fuso horário convertendo "2026-08-08T00:00:00.000Z" para "2026-08-08" antes do parse
+    const dayString = t.date.split('T')[0];
+    const day = format(parseISO(dayString), 'dd/MMM', { locale: ptBR });
     if (!chartDataMap.has(day)) {
       chartDataMap.set(day, { date: day, receitas: 0, despesas: 0 });
     }
@@ -114,8 +117,18 @@ export default function Dashboard() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-in fade-in duration-300">
+            <CardSkeleton count={3} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <Skeleton className="h-6 w-48 mb-6" />
+                <Skeleton className="h-[320px] w-full" />
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <Skeleton className="h-6 w-48 mb-6" />
+                <Skeleton className="h-[320px] w-full" />
+              </div>
+            </div>
           </div>
         ) : (
           <>
@@ -171,27 +184,17 @@ export default function Dashboard() {
                 {chartData.length > 0 ? (
                   <div className="h-[320px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#dc2626" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
+                      <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                         <XAxis dataKey="date" tick={{fontSize: 12, fill: '#6b7280'}} tickLine={false} axisLine={false} />
-                        <YAxis tick={{fontSize: 12, fill: '#6b7280'}} tickLine={false} axisLine={false} tickFormatter={(value) => `R$${value}`} />
+                        <YAxis tick={{fontSize: 12, fill: '#6b7280'}} tickLine={false} axisLine={false} tickFormatter={(value) => `R$ ${value}`} />
                         <Tooltip 
                           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }}
                           formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, '']}
                         />
-                        <Area type="monotone" dataKey="receitas" name="Receitas" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorReceitas)" />
-                        <Area type="monotone" dataKey="despesas" name="Despesas" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorDespesas)" />
-                      </AreaChart>
+                        <Bar dataKey="receitas" name="Receitas" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="despesas" name="Despesas" fill="#dc2626" radius={[4, 4, 0, 0]} />
+                      </BarChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
@@ -253,7 +256,7 @@ export default function Dashboard() {
                           </div>
                           <div>
                             <p className="font-semibold text-gray-900 text-sm truncate max-w-[120px]" title={t.description}>{t.description}</p>
-                            <p className="text-xs text-gray-500">{format(parseISO(t.date), 'dd/MM/yyyy')}</p>
+                            <p className="text-xs text-gray-500">{format(parseISO(t.date.split('T')[0]), 'dd/MM/yyyy')}</p>
                           </div>
                         </div>
                         <div className={`font-bold text-sm ${t.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>

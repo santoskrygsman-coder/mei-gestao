@@ -9,6 +9,8 @@ import customerRoutes from './routes/customers';
 import salesRouter from './routes/sales';
 import reportsRouter from './routes/reports';
 import uploadRouter from './routes/upload';
+import billingRouter from './routes/billing';
+import categoriesRouter from './routes/categories';
 
 dotenv.config();
 
@@ -27,6 +29,8 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/sales', salesRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/billing', billingRouter);
+app.use('/api/categories', categoriesRouter);
 
 // Global Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

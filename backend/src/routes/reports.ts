@@ -100,20 +100,32 @@ router.get('/financial', async (req: Request, res: Response, next) => {
     const { companyId } = req.user as any;
     const { startDate, endDate } = req.query;
     
-    const dateFilter = startDate && endDate ? {
+    const dateFilterTransactions = startDate && endDate ? {
       date: {
         gte: new Date(startDate as string),
         lte: new Date(endDate as string)
       }
     } : {};
     
+    const dateFilterSales = startDate && endDate ? {
+      createdAt: {
+        gte: new Date(startDate as string),
+        lte: new Date(endDate as string)
+      }
+    } : {};
+    
     const transactions = await prisma.transaction.findMany({
-      where: { companyId, ...dateFilter }
+      where: { companyId, ...dateFilterTransactions }
+    });
+
+    const sales = await prisma.sale.findMany({
+      where: { companyId, status: 'COMPLETED', ...dateFilterSales }
     });
 
     let totalIncome = 0;
     let totalExpense = 0;
     const categoryBreakdown: Record<string, number> = {};
+    const incomeByMethod: Record<string, number> = {};
 
     for (const t of transactions) {
       if (t.type === 'income') {
@@ -125,11 +137,16 @@ router.get('/financial', async (req: Request, res: Response, next) => {
       }
     }
 
+    for (const sale of sales) {
+      incomeByMethod[sale.paymentMethod] = (incomeByMethod[sale.paymentMethod] || 0) + sale.total;
+    }
+
     res.json({
       totalIncome,
       totalExpense,
       balance: totalIncome - totalExpense,
-      expensesByCategory: Object.entries(categoryBreakdown).map(([name, value]) => ({ name, value }))
+      expensesByCategory: Object.entries(categoryBreakdown).map(([name, value]) => ({ name, value })),
+      incomeByMethod: Object.entries(incomeByMethod).map(([method, value]) => ({ method, value }))
     });
   } catch (error) {
     next(error);

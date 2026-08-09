@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Logo } from '../components/Logo';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -38,10 +39,8 @@ export default function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 font-sans text-gray-900">
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200 mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">M</span>
-          </div>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Logo className="w-12 h-12 mb-4 drop-shadow-xl" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Criar Conta</h1>
           <p className="text-gray-500 text-sm">Comece a gerenciar seu MEI agora mesmo</p>
         </div>
