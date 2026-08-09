@@ -23,6 +23,7 @@ interface CustomerAccountData {
     id: string;
     saleNumber: number;
     total: number;
+    amountPaid: number;
     createdAt: string;
   }>;
 }
@@ -72,9 +73,13 @@ export default function Customers() {
   const [payModal, setPayModal] = useState<{
     isOpen: boolean;
     saleId: string | null;
+    remaining: number;
+    amountToPay: string;
   }>({
     isOpen: false,
-    saleId: null
+    saleId: null,
+    remaining: 0,
+    amountToPay: ''
   });
 
   const showModal = (type: 'success' | 'error' | 'info', title: string, message: string | React.ReactNode) => {
@@ -117,7 +122,14 @@ export default function Customers() {
   const payNotinha = async () => {
     if (!accountModal.customer || !payModal.saleId) return;
     const saleId = payModal.saleId;
-    setPayModal({ isOpen: false, saleId: null });
+    const amount = Number(payModal.amountToPay);
+    
+    if (isNaN(amount) || amount <= 0 || amount > payModal.remaining) {
+      showModal('error', 'Erro', 'Valor inválido.');
+      return;
+    }
+
+    setPayModal({ isOpen: false, saleId: null, remaining: 0, amountToPay: '' });
     
     try {
       const token = localStorage.getItem('token');
@@ -125,7 +137,7 @@ export default function Customers() {
       const res = await fetch(`${apiUrl}/api/sales/${saleId}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ paymentMethod: 'CASH' }) 
+        body: JSON.stringify({ paymentMethod: 'CASH', amount }) 
       });
       if (res.ok) {
         showModal('success', 'Pagamento Recebido', 'Notinha baixada com sucesso.');
@@ -495,12 +507,18 @@ export default function Customers() {
                               <span className="text-xs text-gray-500">{new Date(sale.createdAt).toLocaleDateString('pt-BR')}</span>
                             </div>
                             <div className="text-2xl font-black text-red-600">
-                              R$ {sale.total.toFixed(2)}
+                              R$ {(sale.total - sale.amountPaid).toFixed(2)}
                             </div>
+                            {sale.amountPaid > 0 && (
+                              <div className="text-sm text-gray-500">
+                                Total: R$ {sale.total.toFixed(2)} (Pago: R$ {sale.amountPaid.toFixed(2)})
+                              </div>
+                            )}
                           </div>
                           <button 
                             onClick={() => {
-                              setPayModal({ isOpen: true, saleId: sale.id });
+                              const remaining = sale.total - sale.amountPaid;
+                              setPayModal({ isOpen: true, saleId: sale.id, remaining, amountToPay: remaining.toFixed(2) });
                             }}
                             className="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-sm whitespace-nowrap"
                           >
@@ -534,14 +552,42 @@ export default function Customers() {
         confirmText="Excluir"
       />
 
-      <ConfirmModal
-        isOpen={payModal.isOpen}
-        title="Receber Pagamento"
-        message="Confirma o recebimento desta notinha?"
-        onConfirm={payNotinha}
-        onCancel={() => setPayModal({ isOpen: false, saleId: null })}
-        confirmText="Confirmar Recebimento"
-      />
+      {payModal.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 my-8 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold mb-4">Receber Pagamento</h3>
+            <p className="text-gray-600 mb-4 text-sm">
+              Qual valor você está recebendo agora? O total restante é de <strong className="text-red-600">R$ {payModal.remaining.toFixed(2)}</strong>.
+            </p>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Valor do Pagamento (R$)</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                min="0"
+                max={payModal.remaining}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-green-500 font-bold" 
+                value={payModal.amountToPay} 
+                onChange={e => setPayModal(prev => ({ ...prev, amountToPay: e.target.value }))} 
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setPayModal({ isOpen: false, saleId: null, remaining: 0, amountToPay: '' })} 
+                className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={payNotinha} 
+                className="px-6 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium shadow-sm"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -59,6 +59,10 @@ export default function POS() {
   const [creditModalOpen, setCreditModalOpen] = useState(false);
   const [cashModalOpen, setCashModalOpen] = useState(false);
   const [installments, setInstallments] = useState(1);
+  const [creditLimitModal, setCreditLimitModal] = useState<{
+    isOpen: boolean;
+    available: number;
+  }>({ isOpen: false, available: 0 });
 
   // Receipt State
   const [lastSale, setLastSale] = useState<any>(null);
@@ -143,7 +147,7 @@ export default function POS() {
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.salePrice * item.cartQuantity), 0);
 
-  const initiateCheckout = (status: 'COMPLETED' | 'CONDICIONAL' = 'COMPLETED') => {
+  const initiateCheckout = async (status: 'COMPLETED' | 'CONDICIONAL' = 'COMPLETED', skipLimitCheck = false) => {
     if (cart.length === 0) return;
     
     if (status === 'CONDICIONAL' && !selectedCustomerId) {
@@ -154,6 +158,26 @@ export default function POS() {
     if (status === 'COMPLETED' && paymentMethod === 'CREDIARIO' && !selectedCustomerId) {
       showModal('error', 'Cliente Obrigatório', 'Para vendas no Crediário (Notinha), é obrigatório selecionar um cliente cadastrado.');
       return;
+    }
+
+    // Validação de Limite de Crédito
+    if (status === 'COMPLETED' && paymentMethod === 'CREDIARIO' && selectedCustomerId && !skipLimitCheck) {
+      try {
+        const token = localStorage.getItem('token');
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const res = await fetch(`${apiUrl}/api/customers/${selectedCustomerId}/account`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const account = await res.json();
+          if (cartTotal > account.availableCredit) {
+            setCreditLimitModal({ isOpen: true, available: account.availableCredit });
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao verificar limite:", e);
+      }
     }
 
     if (status === 'CONDICIONAL') {
@@ -604,6 +628,42 @@ export default function POS() {
                   className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 transition-all flex justify-center items-center"
                 >
                   {isProcessing ? 'Aguarde...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Limite Excedido */}
+      {creditLimitModal.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-5 border-b border-gray-100 bg-red-600 text-white flex justify-between items-center">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                Limite Excedido
+              </h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-600 mb-4">
+                O cliente possui apenas <strong className="text-red-600">R$ {creditLimitModal.available.toFixed(2)}</strong> de crédito disponível. O valor da venda é de R$ {cartTotal.toFixed(2)}.
+              </p>
+              <p className="text-gray-900 font-bold mb-6">Deseja liberar a venda mesmo assim?</p>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setCreditLimitModal({ isOpen: false, available: 0 })}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    setCreditLimitModal({ isOpen: false, available: 0 });
+                    initiateCheckout('COMPLETED', true);
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-all shadow-md flex justify-center items-center"
+                >
+                  Liberar Venda
                 </button>
               </div>
             </div>

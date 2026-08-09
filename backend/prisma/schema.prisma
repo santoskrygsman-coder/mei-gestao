@@ -138,9 +138,10 @@ model Sale {
   id          String   @id @default(uuid())
   saleNumber  Int      @default(autoincrement())
   total       Float
-  status      String   @default("COMPLETED") // COMPLETED, PENDING_PAYMENT, CONDICIONAL
+  status      String   @default("COMPLETED") // COMPLETED, PENDING_PAYMENT, CONDICIONAL, PARTIAL_PAYMENT
   paymentMethod String @default("CASH") // CASH, PIX, CREDIT, DEBIT, CREDIARIO
   installments  Int    @default(1)
+  amountPaid  Float    @default(0) // Used for tracking partial payments on crediário/notinhas
   createdAt   DateTime @default(now())
 
   // Opcional: vinculado a um cliente

@@ -57,6 +57,7 @@ router.post('/', async (req: Request, res: Response) => {
           status: finalStatus,
           paymentMethod,
           installments: Number(installments),
+          amountPaid: finalStatus === 'COMPLETED' ? Number(total) : 0,
           customerId: customerId || null,
           companyId,
           items: {
@@ -122,7 +123,7 @@ router.post('/:id/finalize', async (req: Request, res: Response) => {
 
       const updatedSale = await tx.sale.update({
         where: { id },
-        data: { status: 'COMPLETED', paymentMethod }
+        data: { status: 'COMPLETED', paymentMethod, amountPaid: sale.total }
       });
 
       await tx.transaction.create({
@@ -189,25 +190,36 @@ router.post('/:id/return', async (req: Request, res: Response) => {
 router.post('/:id/pay', async (req: Request, res: Response) => {
   const { companyId } = req.user as any;
   const id = req.params.id as string;
-  const { paymentMethod } = req.body;
+  const { paymentMethod, amount } = req.body;
 
   try {
     const result = await prisma.$transaction(async (tx) => {
       const sale = await tx.sale.findFirst({ where: { id, companyId } });
-      if (!sale || sale.status !== 'PENDING_PAYMENT') {
+      if (!sale || (sale.status !== 'PENDING_PAYMENT' && sale.status !== 'PARTIAL_PAYMENT')) {
         throw new Error('Venda não encontrada ou já está paga');
       }
 
+      // Calcula o quanto ainda deve
+      const remainingDebt = sale.total - sale.amountPaid;
+      // Se não enviou amount, assume o pagamento total do restante
+      const paymentAmount = amount !== undefined ? Number(amount) : remainingDebt;
+
+      if (paymentAmount <= 0) throw new Error('Valor de pagamento inválido');
+      if (paymentAmount > remainingDebt) throw new Error(`O valor não pode ser maior que o débito restante (R$ ${remainingDebt.toFixed(2)})`);
+
+      const newAmountPaid = sale.amountPaid + paymentAmount;
+      const newStatus = newAmountPaid >= sale.total ? 'COMPLETED' : 'PARTIAL_PAYMENT';
+
       const updatedSale = await tx.sale.update({
         where: { id },
-        data: { status: 'COMPLETED', paymentMethod }
+        data: { status: newStatus, paymentMethod, amountPaid: newAmountPaid }
       });
 
       await tx.transaction.create({
         data: {
           type: 'income',
-          description: `Recebimento Crediário - #${String(sale.saleNumber).padStart(4, '0')}`,
-          amount: sale.total,
+          description: `Recebimento Crediário${newStatus === 'PARTIAL_PAYMENT' ? ' (Parcial)' : ''} - #${String(sale.saleNumber).padStart(4, '0')}`,
+          amount: paymentAmount,
           category: 'Vendas',
           date: new Date().toISOString(),
           companyId

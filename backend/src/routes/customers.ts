@@ -127,7 +127,7 @@ router.get('/:id/account', async (req: Request, res: Response) => {
       where: {
         customerId,
         companyId,
-        status: 'PENDING_PAYMENT'
+        status: { in: ['PENDING_PAYMENT', 'PARTIAL_PAYMENT'] }
       },
       include: {
         items: {
@@ -137,7 +137,7 @@ router.get('/:id/account', async (req: Request, res: Response) => {
       orderBy: { createdAt: 'asc' }
     });
 
-    const totalUsed = pendingSales.reduce((acc, sale) => acc + sale.total, 0);
+    const totalUsed = pendingSales.reduce((acc, sale) => acc + (sale.total - sale.amountPaid), 0);
     const availableCredit = Math.max(0, customer.creditLimit - totalUsed);
 
     res.json({
