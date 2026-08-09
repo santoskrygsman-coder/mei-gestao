@@ -4,47 +4,46 @@ export const Logo = ({ className = "w-8 h-8" }: { className?: string }) => {
   return (
     <svg 
       className={className} 
-      viewBox="0 0 40 40" 
+      viewBox="0 0 100 100" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
         <linearGradient id="omniGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#2563EB" />
-          <stop offset="100%" stopColor="#4F46E5" />
+          <stop offset="100%" stopColor="#8B5CF6" />
         </linearGradient>
-        <linearGradient id="omniGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+        <linearGradient id="omniGrad2" x1="100%" y1="100%" x2="0%" y2="0%">
           <stop offset="0%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#2563EB" />
+          <stop offset="100%" stopColor="#4338CA" />
         </linearGradient>
       </defs>
       
-      {/* Outer Hexagon/Polygon base to give it a solid, structural feel */}
+      {/* Omni Loop - representing continuous flow and all-encompassing management */}
       <path 
-        d="M20 2L35.5885 11V29L20 38L4.41154 29V11L20 2Z" 
-        fill="url(#omniGrad1)" 
-        fillOpacity="0.1"
-      />
-      
-      {/* Core "O" shape representing Omni (all-encompassing) with dynamic overlapping paths */}
-      <path 
-        d="M20 7C12.8203 7 7 12.8203 7 20C7 27.1797 12.8203 33 20 33C27.1797 33 33 27.1797 33 20"
+        d="M 30,50 C 30,30 50,30 50,50 C 50,70 70,70 70,50 C 70,30 50,30 50,50 C 50,70 30,70 30,50 Z" 
         stroke="url(#omniGrad1)"
-        strokeWidth="4"
+        strokeWidth="12"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
       
-      <path 
-        d="M20 33C27.1797 33 33 27.1797 33 20C33 12.8203 27.1797 7 20 7"
+      {/* Central Spark/Data point representing insight */}
+      <circle cx="50" cy="50" r="6" fill="url(#omniGrad2)" />
+      
+      {/* Outer bounding elements for 'Gestão' (structure/management) */}
+      <path
+        d="M 15,25 L 25,15"
         stroke="url(#omniGrad2)"
-        strokeWidth="4"
+        strokeWidth="6"
         strokeLinecap="round"
-        strokeDasharray="40 100"
-        strokeDashoffset="10"
       />
-      
-      {/* Central connection point representing Gestão (control/center) */}
-      <circle cx="20" cy="20" r="4" fill="url(#omniGrad2)" />
+      <path
+        d="M 85,75 L 75,85"
+        stroke="url(#omniGrad2)"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 };
